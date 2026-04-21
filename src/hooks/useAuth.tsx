@@ -3,6 +3,8 @@ import { AppRole, MockUser } from "@/lib/mockData";
 import { apiClient, setAuthToken, removeAuthToken, getAuthToken } from "@/lib/apiClient";
 import { jwtDecode } from "jwt-decode";
 
+export type { AppRole };
+
 interface Session {
   access_token: string;
   user: MockUser;

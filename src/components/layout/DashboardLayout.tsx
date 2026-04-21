@@ -12,6 +12,7 @@ import {
   SidebarProvider, SidebarTrigger, useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth, AppRole } from "@/hooks/useAuth";
+import { useAppData } from "@/hooks/useAppData";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -57,43 +58,58 @@ const AppSidebar = ({ role }: { role: AppRole }) => {
   const items = navByRole[role];
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarContent className="bg-sidebar">
-        <div className={cn("p-4 flex items-center gap-2.5", collapsed && "justify-center px-2")}>
+    <Sidebar collapsible="icon" className="border-0 shadow-lg">
+      <SidebarContent className="flex flex-col h-full bg-white">
+
+        {/* Logo */}
+        <div className={cn(
+          "flex items-center border-b",
+          collapsed ? "justify-center px-2 py-4" : "px-5 py-4"
+        )} style={{ borderBottomColor: "#fe651930" }}>
           {collapsed ? (
-            <img src="/logo.svg" alt="Crafted" className="w-8 h-8 object-contain" />
+            <img src="/favicon.ico" alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
           ) : (
-            <img src="/logo.svg" alt="Crafted Learning Hub" className="h-10 max-w-[140px] object-contain" />
+            <img src="/logo.svg" alt="Crafted Learning Hub" className="h-14 max-w-[180px] object-contain" />
           )}
         </div>
-        <SidebarGroup>
-          {!collapsed && <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground px-3 mt-2">Menu</SidebarGroupLabel>}
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1 px-2">
-              {items.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild className="h-10">
-                    <NavLink
-                      to={item.url}
-                      end={item.url.split("/").length <= 2}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center gap-3 rounded-lg px-3 transition-smooth",
-                          isActive
-                            ? "bg-primary-soft text-primary font-medium"
-                            : "text-sidebar-foreground hover:bg-secondary"
-                        )
-                      }
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span className="text-sm">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
+        {/* Nav Items */}
+        <nav className="flex-1 flex flex-col gap-1 px-3 py-4">
+          {items.map((item) => (
+            <NavLink
+              key={item.url}
+              to={item.url}
+              end={item.url.split("/").length <= 2}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200 group",
+                  collapsed && "justify-center px-2",
+                  isActive
+                    ? "bg-[#fe6519] text-white shadow-md"
+                    : "text-[#fe6519]/70 hover:bg-[#fe6519]/10 hover:text-[#fe6519]"
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon className={cn(
+                    "shrink-0 transition-all duration-200",
+                    collapsed ? "h-5 w-5" : "h-4 w-4",
+                    isActive ? "text-white" : "text-[#fe6519]/70 group-hover:text-[#fe6519]"
+                  )} />
+                  {!collapsed && (
+                    <span className="tracking-wide uppercase text-xs">
+                      {item.title}
+                    </span>
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Bottom spacer */}
+        <div className="h-4" />
       </SidebarContent>
     </Sidebar>
   );
@@ -118,6 +134,16 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
     else navigate("/");
   };
 
+  const { announcements } = useAppData();
+  const hasNews = (announcements || []).length > 0;
+
+  // Bell nav target per role
+  const newsUrl = role === "student"
+    ? "/dashboard/news"
+    : role === "teacher"
+    ? "/teacher/announcements"
+    : "/admin/announcements";
+
   // Derive title from path if not given
   const items = navByRole[role];
   const current = items.find((i) => location.pathname === i.url || location.pathname.startsWith(i.url + "/"));
@@ -136,9 +162,17 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={() => navigate(newsUrl)}
+                title="Notifications"
+              >
                 <Bell className="h-4 w-4" />
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+                {hasNews && (
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background" />
+                )}
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
