@@ -6,16 +6,30 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, BookOpen } from "lucide-react";
+import { Plus, Trash2, BookOpen, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { AppRole } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
 
 const AdminCourses = ({ viewerRole = "admin" as AppRole }) => {
-  const { courses, createCourse, deleteCourse } = useAppData();
+  const { courses, createCourse, deleteCourse, updateCourse } = useAppData();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({ name: "", description: "" });
-  const rows = [...courses].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const [editForm, setEditForm] = useState({ id: "", name: "", description: "" });
+  const rows = [...courses].sort((a, b) => a.created_at ? b.created_at.localeCompare(a.created_at) : -1);
+
+  const handleOpenEdit = (course: any) => {
+    setEditForm({ id: course.id, name: course.name, description: course.description || "" });
+    setEditOpen(true);
+  };
+
+  const onEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateCourse(editForm.id, { name: editForm.name, description: editForm.description });
+    toast.success("Course updated");
+    setEditOpen(false);
+  };
 
   const onCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +77,27 @@ const AdminCourses = ({ viewerRole = "admin" as AppRole }) => {
         </Dialog>
       </div>
 
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <form onSubmit={onEdit}>
+            <DialogHeader><DialogTitle>Edit course</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label>Name</Label>
+                <Input required value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea rows={3} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" variant="hero">Update</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {rows.length === 0 ? (
         <Card className="p-12 text-center shadow-card border-border/60">
           <div className="h-14 w-14 rounded-2xl bg-primary-soft flex items-center justify-center mx-auto mb-3">
@@ -78,9 +113,14 @@ const AdminCourses = ({ viewerRole = "admin" as AppRole }) => {
                 <div className="h-10 w-10 rounded-xl bg-primary-soft flex items-center justify-center">
                   <BookOpen className="h-5 w-5 text-primary" />
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => onDelete(course.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(course)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => onDelete(course.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
               </div>
               <h3 className="font-display font-semibold mt-3">{course.name}</h3>
               {course.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{course.description}</p>}

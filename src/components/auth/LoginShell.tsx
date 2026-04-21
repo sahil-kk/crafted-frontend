@@ -54,7 +54,7 @@ export const LoginShell = ({ role, title, subtitle, redirectPath, showBackToStud
       {/* Left: branding */}
       <div className="hidden lg:flex flex-1 relative overflow-hidden bg-gradient-primary p-12 flex-col justify-between text-primary-foreground">
         <div className="flex items-center gap-2.5">
-          <img src="logo.svg" alt="Crafted" className="h-16 w-auto max-w-[200px] object-contain bg-white rounded-2xl shadow-elevated p-3 pl-4 pr-4" />
+          <img src="/logo.svg" alt="Crafted" className="h-16 w-auto max-w-[200px] object-contain bg-white rounded-2xl shadow-elevated p-3 pl-4 pr-4" />
         </div>
         <div className="space-y-6 max-w-md">
           <h1 className="font-display text-5xl font-bold leading-[1.05] text-balance">
@@ -88,7 +88,7 @@ export const LoginShell = ({ role, title, subtitle, redirectPath, showBackToStud
       <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md animate-fade-in">
           <div className="lg:hidden flex items-center mt-2 mb-8 justify-center">
-            <img src="logo.svg" alt="Crafted" className="max-h-12 w-auto object-contain" />
+            <img src="/logo.svg" alt="Crafted" className="max-h-12 w-auto object-contain" />
           </div>
 
           <Card className="p-8 shadow-card border-border/60">

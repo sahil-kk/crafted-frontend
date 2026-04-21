@@ -61,9 +61,9 @@ const AppSidebar = ({ role }: { role: AppRole }) => {
       <SidebarContent className="bg-sidebar">
         <div className={cn("p-4 flex items-center gap-2.5", collapsed && "justify-center px-2")}>
           {collapsed ? (
-            <img src="logo.svg" alt="Crafted" className="w-8 h-8 object-contain" />
+            <img src="/logo.svg" alt="Crafted" className="w-8 h-8 object-contain" />
           ) : (
-            <img src="logo.svg" alt="Crafted Learning Hub" className="h-10 max-w-[140px] object-contain" />
+            <img src="/logo.svg" alt="Crafted Learning Hub" className="h-10 max-w-[140px] object-contain" />
           )}
         </div>
         <SidebarGroup>

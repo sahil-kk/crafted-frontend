@@ -60,15 +60,6 @@ const StudentExams = () => {
                         <FileText className="h-4 w-4 mr-2" /> View Question Paper
                       </Button>
                   )}
-                  {attempted ? (
-                    <Button variant="soft" className="w-full" disabled>
-                      <CheckCircle2 className="h-4 w-4 mr-2" /> Attempted
-                    </Button>
-                  ) : (
-                    <Button variant="hero" className="w-full" onClick={() => navigate(`/dashboard/exams/${exam.id}`)}>
-                      Start interactive exam
-                    </Button>
-                  )}
                 </div>
               </Card>
             );

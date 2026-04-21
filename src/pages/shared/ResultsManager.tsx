@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Trophy } from "lucide-react";
+import { Plus, Trash2, Trophy, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useAppData, ResultObj } from "@/hooks/useAppData";
 
@@ -16,8 +16,9 @@ interface Props {
 }
 
 const ResultsManager = ({ viewerRole }: Props) => {
-  const { users, results, createResult, deleteResult } = useAppData();
+  const { users, results, createResult, deleteResult, updateResult } = useAppData();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const students = users.filter((u) => u.role === "student");
   
   const [form, setForm] = useState({
@@ -29,6 +30,46 @@ const ResultsManager = ({ viewerRole }: Props) => {
     grade: "",
     trend: "up"
   });
+
+  const [editForm, setEditForm] = useState({
+    id: "",
+    studentId: "",
+    subject: "",
+    examType: "final",
+    score: "",
+    maxScore: "",
+    grade: "",
+    trend: "up"
+  });
+
+  const handleOpenEdit = (result: any) => {
+    setEditForm({
+      id: result._id || result.id,
+      studentId: result.studentId,
+      subject: result.subject,
+      examType: result.examType || "final",
+      score: result.score?.toString() || "",
+      maxScore: result.maxScore?.toString() || "",
+      grade: result.grade || "",
+      trend: result.trend || "up"
+    });
+    setEditOpen(true);
+  };
+
+  const onEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateResult(editForm.id, {
+      studentId: editForm.studentId,
+      subject: editForm.subject,
+      examType: editForm.examType,
+      score: Number(editForm.score),
+      maxScore: Number(editForm.maxScore),
+      grade: editForm.grade,
+      trend: editForm.trend
+    });
+    toast.success("Result updated!");
+    setEditOpen(false);
+  };
 
   const onCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +151,59 @@ const ResultsManager = ({ viewerRole }: Props) => {
         </Dialog>
       </div>
 
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <form onSubmit={onEdit}>
+            <DialogHeader><DialogTitle>Edit Result</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label>Target Student</Label>
+                <Select value={editForm.studentId} onValueChange={(v) => setEditForm({ ...editForm, studentId: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select student..." /></SelectTrigger>
+                  <SelectContent>
+                    {students.map((stu) => <SelectItem key={stu.id} value={stu.id}>{stu.full_name || stu.email}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Subject</Label>
+                <Input required value={editForm.subject} onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Score</Label>
+                  <Input type="number" required value={editForm.score} onChange={(e) => setEditForm({ ...editForm, score: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Max Score</Label>
+                  <Input type="number" required value={editForm.maxScore} onChange={(e) => setEditForm({ ...editForm, maxScore: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Exam Type</Label>
+                  <Select value={editForm.examType} onValueChange={(v) => setEditForm({ ...editForm, examType: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="final">Final</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Grade (Optional)</Label>
+                  <Input value={editForm.grade} onChange={(e) => setEditForm({ ...editForm, grade: e.target.value })} />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={!editForm.studentId} variant="hero">Update</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Card className="p-4 shadow-card border-border/60">
         {!results || results.length === 0 ? (
           <div className="py-16 text-center">
@@ -139,9 +233,14 @@ const ResultsManager = ({ viewerRole }: Props) => {
                     <TableCell>{r.score} / {r.maxScore} {r.grade ? `(${r.grade})` : ""}</TableCell>
                     <TableCell className="capitalize">{r.examType}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => deleteResult(r._id! || r.id!)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex gap-1 justify-end shrink-0">
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(r)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteResult(r._id! || r.id!)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

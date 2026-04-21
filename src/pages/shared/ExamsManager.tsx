@@ -20,8 +20,9 @@ interface Props {
 }
 
 const ExamsManager = ({ viewerRole }: Props) => {
-  const { courses, exams, users, createExam, deleteExam } = useAppData();
+  const { courses, exams, users, createExam, deleteExam, updateExam } = useAppData();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const students = users.filter((u) => u.role === "student");
   
   const [form, setForm] = useState({
@@ -34,9 +35,49 @@ const ExamsManager = ({ viewerRole }: Props) => {
     studentId: "",
   });
   
+  const [editForm, setEditForm] = useState({
+    id: "",
+    title: "",
+    description: "",
+    exam_type: "weekly",
+    duration_minutes: 30,
+    starts_at: "",
+    course_id: "",
+    studentId: "",
+  });
+  
   const [file, setFile] = useState<File | null>(null);
 
-  const rows = [...exams].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const rows = [...exams].sort((a, b) => a.created_at ? b.created_at.localeCompare(a.created_at) : -1);
+
+  const handleOpenEdit = (exam: any) => {
+    setEditForm({
+      id: exam.id,
+      title: exam.title,
+      description: exam.description || "",
+      exam_type: exam.exam_type || "weekly",
+      duration_minutes: exam.duration_minutes || 30,
+      starts_at: exam.starts_at || "",
+      course_id: exam.course_id || "",
+      studentId: exam.studentId || "",
+    });
+    setEditOpen(true);
+  };
+
+  const onEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateExam(editForm.id, {
+      title: editForm.title,
+      description: editForm.description,
+      exam_type: editForm.exam_type,
+      duration_minutes: Number(editForm.duration_minutes),
+      starts_at: editForm.starts_at ? new Date(editForm.starts_at).toISOString() : null,
+      course_id: editForm.course_id || null,
+      studentId: editForm.studentId || null,
+    });
+    toast.success("Exam updated");
+    setEditOpen(false);
+  };
 
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +157,37 @@ const ExamsManager = ({ viewerRole }: Props) => {
         </Dialog>
       </div>
 
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <form onSubmit={onEdit}>
+            <DialogHeader><DialogTitle>Edit Exam Metadata</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label>Title</Label>
+                <Input required value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+              </div>
+              <div>
+                 <Label>Target Student (Optional)</Label>
+                 <Select value={editForm.studentId || "none"} onValueChange={(value) => setEditForm({ ...editForm, studentId: value === "none" ? "" : value })}>
+                  <SelectTrigger><SelectValue placeholder="Broadcast to All" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Broadcast to All</SelectItem>
+                    {students.map((student) => <SelectItem key={student.id} value={student.id}>{student.full_name || student.email}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Subject Description</Label>
+                <Textarea rows={2} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" variant="hero">Update</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {rows.length === 0 ? (
         <Card className="p-12 text-center shadow-card border-border/60">
           <div className="h-14 w-14 rounded-2xl bg-primary-soft flex items-center justify-center mx-auto mb-3">
@@ -129,9 +201,14 @@ const ExamsManager = ({ viewerRole }: Props) => {
             <Card key={row.id} className="p-5 shadow-card border-border/60 hover:shadow-elevated transition-smooth">
               <div className="flex items-start justify-between gap-2">
                 <Badge variant="secondary" className="bg-primary-soft text-primary border-0 capitalize">{row.exam_type}</Badge>
-                <Button variant="ghost" size="icon" onClick={() => onDelete(row.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+                <div className="flex gap-1 shrink-0">
+                  <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(row)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => onDelete(row.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
               </div>
               <h3 className="font-display font-semibold mt-3">{row.title}</h3>
               {row.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{row.description}</p>}

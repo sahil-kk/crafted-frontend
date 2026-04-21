@@ -80,12 +80,16 @@ interface AppDataContextValue extends MockAppState {
   updateUser: (input: UpdateUserInput) => void;
   createCourse: (input: CreateCourseInput) => void;
   deleteCourse: (id: string) => void;
+  updateCourse: (id: string, input: Partial<CreateCourseInput>) => void;
   createClass: (input: CreateClassInput) => void;
   deleteClass: (id: string) => void;
+  updateClass: (id: string, input: Partial<CreateClassInput>) => void;
   createAnnouncement: (input: CreateAnnouncementInput) => void;
   deleteAnnouncement: (id: string) => void;
+  updateAnnouncement: (id: string, input: Partial<CreateAnnouncementInput>) => void;
   createExam: (input: CreateExamInput) => string;
   deleteExam: (id: string) => void;
+  updateExam: (id: string, input: Partial<CreateExamInput>) => void;
   createQuestion: (input: CreateQuestionInput) => void;
   deleteQuestion: (id: string) => void;
   getOrCreateAttempt: (examId: string, studentId: string) => ExamAttempt;
@@ -95,8 +99,10 @@ interface AppDataContextValue extends MockAppState {
   timetables: TimetableObj[];
   createTimetable: (input: TimetableObj) => void;
   deleteTimetable: (id: string) => void;
+  updateTimetable: (id: string, input: Partial<TimetableObj>) => void;
   createResult: (res: ResultObj) => void;
   deleteResult: (id: string) => void;
+  updateResult: (id: string, res: Partial<ResultObj>) => void;
 }
 
 const STORAGE_KEY = "ui-only-school-app";
@@ -185,6 +191,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             duration_minutes: 60,
             starts_at: e.date || new Date().toISOString(),
             course_id: null,
+            pdf: e.pdf,
             created_at: e.createdAt || new Date().toISOString()
           })),
         }));
@@ -299,6 +306,13 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         courses: prev.courses.filter((course) => course.id !== id),
       }));
     },
+    updateCourse: async (id, input) => {
+      try { await apiClient(`/courses/${id}`, { method: "PATCH", body: JSON.stringify(input) }); } catch(e) {}
+      setState((prev) => ({
+        ...prev,
+        courses: prev.courses.map((item) => item.id === id ? { ...item, ...input } : item),
+      }));
+    },
     createClass: async (input) => {
       try {
         const res = await apiClient<any>("/classes", {
@@ -336,25 +350,47 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         recordedClasses: prev.recordedClasses.filter((item) => item.id !== id),
       }));
     },
-    createAnnouncement: (input) => {
+    updateClass: async (id, input) => {
+      try { await apiClient(`/classes/${id}`, { method: "PUT", body: JSON.stringify(input) }); } catch(e) {}
       setState((prev) => ({
         ...prev,
-        announcements: [
-          {
-            id: createId("announcement"),
-            title: input.title,
-            body: input.body,
-            is_global: input.is_global,
-            created_at: new Date().toISOString(),
-          },
-          ...prev.announcements,
-        ],
+        recordedClasses: prev.recordedClasses.map((item) => item.id === id ? { ...item, ...input } : item),
       }));
     },
-    deleteAnnouncement: (id) => {
+    createAnnouncement: async (input) => {
+      try {
+        const payload = { title: input.title, content: input.body, priority: input.is_global ? "high" : "medium" };
+        const res = await apiClient<any>("/announcements", { method: "POST", body: JSON.stringify(payload) });
+        setState((prev) => ({
+          ...prev,
+          announcements: [
+            {
+              id: res._id || createId("announcement"),
+              title: input.title,
+              body: input.body,
+              is_global: input.is_global,
+              created_at: new Date().toISOString(),
+            },
+            ...prev.announcements,
+          ],
+        }));
+      } catch (e) {}
+    },
+    deleteAnnouncement: async (id) => {
+      try { await apiClient(`/announcements/${id}`, { method: "DELETE" }); } catch(e) {}
       setState((prev) => ({
         ...prev,
         announcements: prev.announcements.filter((item) => item.id !== id),
+      }));
+    },
+    updateAnnouncement: async (id, input) => {
+      try { 
+        const payload = { title: input.title, content: input.body, priority: input.is_global ? "high" : "medium" };
+        await apiClient(`/announcements/${id}`, { method: "PUT", body: JSON.stringify(payload) }); 
+      } catch(e) {}
+      setState((prev) => ({
+        ...prev,
+        announcements: prev.announcements.map((item) => item.id === id ? { ...item, ...input } : item),
       }));
     },
     createExam: async (input) => {
@@ -382,6 +418,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
               duration_minutes: input.duration_minutes,
               starts_at: input.starts_at,
               course_id: input.course_id,
+              pdf: res.exam?.pdf,
               created_at: new Date().toISOString(),
             },
             ...prev.exams,
@@ -402,6 +439,15 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             setState(prev => ({ ...prev, results: prev.results.filter((r: any) => r._id !== id && r.id !== id) }));
         } catch(e){}
     },
+    updateResult: async (id, input) => {
+        try {
+            await apiClient(`/results/edit/${id}`, { method: "PUT", body: JSON.stringify(input) });
+            setState((prev) => ({
+              ...prev,
+              results: prev.results.map((r: any) => (r._id === id || r.id === id) ? { ...r, ...input } : r),
+            }));
+        } catch(e){}
+    },
     createTimetable: async (input) => {
       try {
         const res = await apiClient<any>("/timetable", { method: "POST", body: JSON.stringify(input) });
@@ -412,6 +458,15 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
       try {
         await apiClient(`/timetable/${id}`, { method: "DELETE" });
         setState(prev => ({ ...prev, timetables: prev.timetables.filter((t: any) => t._id !== id && t.id !== id) }));
+      } catch(e){}
+    },
+    updateTimetable: async (id, input) => {
+      try {
+        await apiClient(`/timetable/${id}`, { method: "PUT", body: JSON.stringify(input) });
+        setState(prev => ({ 
+          ...prev, 
+          timetables: prev.timetables.map((t: any) => (t._id === id || t.id === id) ? { ...t, ...input } : t) 
+        }));
       } catch(e){}
     },
     deleteExam: async (id) => {
@@ -426,6 +481,16 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           attemptAnswers: prev.attemptAnswers.filter((answer) => !attemptIds.includes(answer.attempt_id)),
         };
       });
+    },
+    updateExam: async (id, input) => {
+      try { 
+        const payload = { title: input.title, subject: input.description, date: input.starts_at, studentId: input.studentId };
+        await apiClient(`/exams/${id}`, { method: "PUT", body: JSON.stringify(payload) }); 
+      } catch(e) {}
+      setState((prev) => ({
+        ...prev,
+        exams: prev.exams.map((item) => item.id === id ? { ...item, ...input } : item),
+      }));
     },
     createQuestion: (input) => {
       setState((prev) => {

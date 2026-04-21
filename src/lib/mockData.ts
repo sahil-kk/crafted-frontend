@@ -40,6 +40,7 @@ export interface Exam {
   duration_minutes: number;
   starts_at: string | null;
   course_id: string | null;
+  pdf?: string;
   created_at: string;
 }
 

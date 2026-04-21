@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Megaphone } from "lucide-react";
+import { Plus, Trash2, Megaphone, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { AppRole } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
@@ -19,10 +19,33 @@ interface Props {
 }
 
 const AnnouncementsManager = ({ viewerRole }: Props) => {
-  const { announcements, createAnnouncement, deleteAnnouncement } = useAppData();
+  const { announcements, createAnnouncement, deleteAnnouncement, updateAnnouncement } = useAppData();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({ title: "", body: "", is_global: viewerRole === "admin" });
-  const rows = [...announcements].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const [editForm, setEditForm] = useState({ id: "", title: "", body: "", is_global: false });
+  const rows = [...announcements].sort((a, b) => a.created_at ? b.created_at.localeCompare(a.created_at) : -1);
+
+  const handleOpenEdit = (announcement: any) => {
+    setEditForm({ 
+      id: announcement.id, 
+      title: announcement.title, 
+      body: announcement.body, 
+      is_global: announcement.is_global 
+    });
+    setEditOpen(true);
+  };
+
+  const onEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateAnnouncement(editForm.id, {
+      title: editForm.title,
+      body: editForm.body,
+      is_global: editForm.is_global
+    });
+    toast.success("Announcement updated");
+    setEditOpen(false);
+  };
 
   const onCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +102,36 @@ const AnnouncementsManager = ({ viewerRole }: Props) => {
         </Dialog>
       </div>
 
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <form onSubmit={onEdit}>
+            <DialogHeader><DialogTitle>Edit announcement</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label>Title</Label>
+                <Input required value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+              </div>
+              <div>
+                <Label>Body</Label>
+                <Textarea rows={5} required value={editForm.body} onChange={(e) => setEditForm({ ...editForm, body: e.target.value })} />
+              </div>
+              {viewerRole === "admin" && (
+                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                  <div>
+                    <Label>Global</Label>
+                    <p className="text-xs text-muted-foreground">Mark as a platform-wide notice</p>
+                  </div>
+                  <Switch checked={editForm.is_global} onCheckedChange={(value) => setEditForm({ ...editForm, is_global: value })} />
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button type="submit" variant="hero">Update</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {rows.length === 0 ? (
         <Card className="p-12 text-center shadow-card border-border/60">
           <div className="h-14 w-14 rounded-2xl bg-primary-soft flex items-center justify-center mx-auto mb-3">
@@ -104,9 +157,14 @@ const AnnouncementsManager = ({ viewerRole }: Props) => {
                     {formatDistanceToNow(new Date(row.created_at), { addSuffix: true })}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => onDelete(row.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+                <div className="flex gap-1 shrink-0">
+                  <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(row)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => onDelete(row.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, CalendarDays } from "lucide-react";
+import { Plus, Trash2, CalendarDays, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { AppRole } from "@/hooks/useAuth";
 import { useAppData, TimetableObj } from "@/hooks/useAppData";
@@ -17,8 +17,9 @@ interface Props {
 }
 
 const TimetableManager = ({ viewerRole }: Props) => {
-  const { users, timetables, createTimetable, deleteTimetable } = useAppData();
+  const { users, timetables, createTimetable, deleteTimetable, updateTimetable } = useAppData();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const students = users.filter((u) => u.role === "student");
   
   const [form, setForm] = useState({
@@ -28,6 +29,40 @@ const TimetableManager = ({ viewerRole }: Props) => {
     teacher: "",
     studentId: "" 
   });
+
+  const [editForm, setEditForm] = useState({
+    id: "",
+    day: "Monday",
+    time: "",
+    subject: "",
+    teacher: "",
+    studentId: "" 
+  });
+
+  const handleOpenEdit = (t: any) => {
+    setEditForm({
+      id: t._id || t.id,
+      day: t.day || "Monday",
+      time: t.time || "",
+      subject: t.subject || "",
+      teacher: t.teacher || "",
+      studentId: t.studentId || ""
+    });
+    setEditOpen(true);
+  };
+
+  const onEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateTimetable(editForm.id, {
+      day: editForm.day,
+      time: editForm.time,
+      subject: editForm.subject,
+      teacher: editForm.teacher,
+      studentId: editForm.studentId || undefined
+    });
+    toast.success("Schedule updated!");
+    setEditOpen(false);
+  };
 
   const onCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +139,56 @@ const TimetableManager = ({ viewerRole }: Props) => {
         </Dialog>
       </div>
 
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <form onSubmit={onEdit}>
+            <DialogHeader><DialogTitle>Edit Schedule Block</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                 <Label>Target Student (Optional)</Label>
+                 <Select value={editForm.studentId || "none"} onValueChange={(value) => setEditForm({ ...editForm, studentId: value === "none" ? "" : value })}>
+                  <SelectTrigger><SelectValue placeholder="Broadcast to All" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Broadcast to All Students</SelectItem>
+                    {students.map((student) => <SelectItem key={student.id} value={student.id}>{student.full_name || student.email}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Day</Label>
+                  <Select value={editForm.day} onValueChange={(v) => setEditForm({ ...editForm, day: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(d => (
+                         <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Time Range</Label>
+                  <Input required placeholder="eg. 09:00 AM - 10:30 AM" value={editForm.time} onChange={(e) => setEditForm({ ...editForm, time: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Subject</Label>
+                  <Input required value={editForm.subject} onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Instructor</Label>
+                  <Input required value={editForm.teacher} onChange={(e) => setEditForm({ ...editForm, teacher: e.target.value })} />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" variant="hero">Update Schedule</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Card className="p-4 shadow-card border-border/60">
         {!timetables || timetables.length === 0 ? (
           <div className="py-16 text-center">
@@ -137,9 +222,14 @@ const TimetableManager = ({ viewerRole }: Props) => {
                     <TableCell>{t.subject}</TableCell>
                     <TableCell>{t.teacher}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => deleteTimetable(t._id! || t.id!)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex gap-1 justify-end shrink-0">
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(t)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteTimetable(t._id! || t.id!)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

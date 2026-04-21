@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Video, Play } from "lucide-react";
+import { Plus, Trash2, Video, Play, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { AppRole } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
@@ -24,11 +24,39 @@ const extractYoutubeId = (input: string) => {
 };
 
 const ClassesManager = ({ viewerRole }: Props) => {
-  const { courses, recordedClasses, createClass, deleteClass } = useAppData();
+  const { courses, recordedClasses, createClass, deleteClass, updateClass } = useAppData();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [active, setActive] = useState<any>(null);
   const [form, setForm] = useState({ title: "", description: "", url: "", course_id: "" });
-  const rows = [...recordedClasses].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const [editForm, setEditForm] = useState({ id: "", title: "", description: "", url: "", course_id: "" });
+  const rows = [...recordedClasses].sort((a, b) => a.created_at ? b.created_at.localeCompare(a.created_at) : -1);
+
+  const handleOpenEdit = (recording: any) => {
+    setEditForm({ 
+      id: recording.id, 
+      title: recording.title, 
+      description: recording.description || "", 
+      url: `https://youtube.com/watch?v=${recording.youtube_id}`, 
+      course_id: recording.course_id || "" 
+    });
+    setEditOpen(true);
+  };
+
+  const onEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const youtubeId = extractYoutubeId(editForm.url);
+    if (!youtubeId) return toast.error("Invalid YouTube URL or video ID");
+    
+    updateClass(editForm.id, {
+      title: editForm.title,
+      description: editForm.description,
+      youtube_id: youtubeId,
+      course_id: editForm.course_id || null,
+    });
+    toast.success("Class updated");
+    setEditOpen(false);
+  };
 
   const onCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +125,41 @@ const ClassesManager = ({ viewerRole }: Props) => {
         </Dialog>
       </div>
 
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <form onSubmit={onEdit}>
+            <DialogHeader><DialogTitle>Edit class</DialogTitle></DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label>Title</Label>
+                <Input required value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+              </div>
+              <div>
+                <Label>YouTube URL or video ID</Label>
+                <Input required placeholder="https://youtube.com/watch?v=..." value={editForm.url} onChange={(e) => setEditForm({ ...editForm, url: e.target.value })} />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea rows={3} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+              </div>
+              <div>
+                <Label>Course (optional)</Label>
+                <Select value={editForm.course_id || "none"} onValueChange={(value) => setEditForm({ ...editForm, course_id: value === "none" ? "" : value })}>
+                  <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {courses.map((course) => <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" variant="hero">Update</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {rows.length === 0 ? (
         <Card className="p-12 text-center shadow-card border-border/60">
           <div className="h-14 w-14 rounded-2xl bg-primary-soft flex items-center justify-center mx-auto mb-3">
@@ -119,9 +182,14 @@ const ClassesManager = ({ viewerRole }: Props) => {
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="font-display font-semibold line-clamp-2">{row.title}</h3>
-                  <Button variant="ghost" size="icon" onClick={() => onDelete(row.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1 shrink-0">
+                    <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(row)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => onDelete(row.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
                 {row.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{row.description}</p>}
               </div>
