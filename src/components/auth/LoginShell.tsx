@@ -105,12 +105,16 @@ export const LoginShell = ({ role, title, subtitle, redirectPath, showBackToStud
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="identifier">
-                  {role === "student" ? "Student ID" : role === "teacher" ? "Username" : "Admin Username"}
+                  {role === "student" ? "Student ID" : role === "teacher" ? "Email / Username" : "Admin Username"}
                 </Label>
                 <Input
                   id="identifier"
                   type="text"
-                  placeholder={role === "student" ? "e.g. STU123" : "e.g. admin"}
+                  placeholder={
+                    role === "student" ? "e.g. STU123"
+                    : role === "teacher" ? "e.g. teacher@school.com"
+                    : "e.g. admin"
+                  }
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   autoComplete="username"
@@ -139,8 +143,13 @@ export const LoginShell = ({ role, title, subtitle, redirectPath, showBackToStud
                 Don't have an account? Ask your institute admin to create one.
               </p>
             )}
+            {role === "teacher" && (
+              <p className="text-xs text-muted-foreground text-center mt-4">
+                💡 Use the <span className="font-semibold text-foreground">email address</span> set by your admin as your username.
+              </p>
+            )}
             {showBackToStudent && (
-              <p className="text-xs text-muted-foreground text-center mt-6">
+              <p className="text-xs text-muted-foreground text-center mt-4">
                 <Link to="/" className="text-primary hover:underline font-medium">← Back to student login</Link>
               </p>
             )}

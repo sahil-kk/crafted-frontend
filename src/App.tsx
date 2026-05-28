@@ -17,6 +17,7 @@ import StudentClasses from "./pages/student/StudentClasses";
 import StudentExams from "./pages/student/StudentExams";
 import StudentResults from "./pages/student/StudentResults";
 import TakeExam from "./pages/student/TakeExam";
+import StudentProfile from "./pages/student/StudentProfile";
 
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/dashboard/exams/:examId" element={<RoleRoute allow={["student"]}><TakeExam /></RoleRoute>} />
             <Route path="/dashboard/results" element={<RoleRoute allow={["student"]}><StudentResults /></RoleRoute>} />
             <Route path="/dashboard/timetable" element={<RoleRoute allow={["student"]}><StudentTimetable /></RoleRoute>} />
+            <Route path="/dashboard/profile" element={<RoleRoute allow={["student"]}><StudentProfile /></RoleRoute>} />
 
             {/* Teacher */}
             <Route path="/teacher/dashboard" element={<RoleRoute allow={["teacher"]} fallback="/teacher"><TeacherDashboard /></RoleRoute>} />

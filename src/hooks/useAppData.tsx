@@ -187,9 +187,9 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             id: e._id,
             title: e.title,
             description: e.subject || "",
-            exam_type: "pdf",
-            duration_minutes: 60,
-            starts_at: e.date || new Date().toISOString(),
+            exam_type: e.exam_type || "unit_test",
+            duration_minutes: e.duration_minutes || 60,
+            starts_at: e.starts_at || e.date || null,
             course_id: null,
             pdf: e.pdf,
             created_at: e.createdAt || new Date().toISOString()

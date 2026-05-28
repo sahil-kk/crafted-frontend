@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  GraduationCap, Home, Newspaper, Video, FileText, BarChart3,
-  Bell, LogOut, Menu, Users, BookOpen, Megaphone, Settings, ClipboardList, Calendar
+  GraduationCap, Home, Newspaper, BookOpen, FileText, BarChart3,
+  Bell, LogOut, Menu, Users, Megaphone, Settings, ClipboardList, Calendar,
+  UserCircle, Video
 } from "lucide-react";
+import { AIChatbot } from "@/components/AIChatbot";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -24,11 +26,10 @@ interface NavItem { title: string; url: string; icon: any; }
 const navByRole: Record<AppRole, NavItem[]> = {
   student: [
     { title: "Dashboard", url: "/dashboard", icon: Home },
-    { title: "Timetable", url: "/dashboard/timetable", icon: Calendar },
-    { title: "News", url: "/dashboard/news", icon: Newspaper },
-    { title: "Recorded Classes", url: "/dashboard/classes", icon: Video },
+    { title: "My Courses", url: "/dashboard/classes", icon: BookOpen },
     { title: "Exams", url: "/dashboard/exams", icon: FileText },
     { title: "Results", url: "/dashboard/results", icon: BarChart3 },
+    { title: "Profile", url: "/dashboard/profile", icon: UserCircle },
   ],
   teacher: [
     { title: "Dashboard", url: "/teacher/dashboard", icon: Home },
@@ -55,17 +56,22 @@ const navByRole: Record<AppRole, NavItem[]> = {
 const AppSidebar = ({ role }: { role: AppRole }) => {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const navigate = useNavigate();
   const items = navByRole[role];
 
   return (
-    <Sidebar collapsible="icon" className="border-0 shadow-lg">
+    <Sidebar collapsible="icon" className="border-0 shadow-lg hidden md:flex">
       <SidebarContent className="flex flex-col h-full bg-white">
 
-        {/* Logo */}
-        <div className={cn(
-          "flex items-center border-b",
-          collapsed ? "justify-center px-2 py-4" : "px-5 py-4"
-        )} style={{ borderBottomColor: "#fe651930" }}>
+        {/* Logo — clicks to dashboard */}
+        <div
+          className={cn(
+            "flex items-center border-b cursor-pointer",
+            collapsed ? "justify-center px-2 py-4" : "px-5 py-4"
+          )}
+          style={{ borderBottomColor: "#fe651930" }}
+          onClick={() => navigate(role === "student" ? "/dashboard" : role === "teacher" ? "/teacher/dashboard" : "/admin/dashboard")}
+        >
           {collapsed ? (
             <img src="/favicon.ico" alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
           ) : (
@@ -115,6 +121,80 @@ const AppSidebar = ({ role }: { role: AppRole }) => {
   );
 };
 
+// ─── Mobile Bottom Navigation Bar ────────────────────────────────────────────
+const MobileBottomNav = ({ role }: { role: AppRole }) => {
+  const items = navByRole[role];
+  const { toggleSidebar, open } = useSidebar();
+
+  // Roles with >5 items get first 4 + a "More" hamburger slot
+  const needsMore = items.length > 5;
+  const visibleItems = needsMore ? items.slice(0, 4) : items;
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="flex items-center justify-around h-16 px-1">
+        {visibleItems.map((item) => (
+          <NavLink
+            key={item.url}
+            to={item.url}
+            end={item.url.split("/").length <= 2}
+            className={({ isActive }) =>
+              cn(
+                "flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 min-w-[52px]",
+                isActive ? "text-[#fe6519]" : "text-gray-400 hover:text-[#fe6519]"
+              )
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <div className={cn(
+                  "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200",
+                  isActive ? "bg-[#fe6519]/10" : ""
+                )}>
+                  <item.icon className={cn(
+                    "h-5 w-5 transition-all duration-200",
+                    isActive ? "text-[#fe6519]" : "text-gray-400"
+                  )} />
+                </div>
+                <span className={cn(
+                  "text-[9px] font-semibold tracking-wide uppercase leading-none",
+                  isActive ? "text-[#fe6519]" : "text-gray-400"
+                )}>
+                  {item.title === "My Courses" ? "Courses" : item.title}
+                </span>
+              </>
+            )}
+          </NavLink>
+        ))}
+
+        {/* "More" hamburger — only for roles with >5 nav items */}
+        {needsMore && (
+          <button
+            onClick={toggleSidebar}
+            className={cn(
+              "flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 min-w-[52px]",
+              open ? "text-[#fe6519]" : "text-gray-400 hover:text-[#fe6519]"
+            )}
+          >
+            <div className={cn(
+              "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200",
+              open ? "bg-[#fe6519]/10" : ""
+            )}>
+              <Menu className={cn("h-5 w-5", open ? "text-[#fe6519]" : "text-gray-400")} />
+            </div>
+            <span className={cn(
+              "text-[9px] font-semibold tracking-wide uppercase leading-none",
+              open ? "text-[#fe6519]" : "text-gray-400"
+            )}>
+              More
+            </span>
+          </button>
+        )}
+      </div>
+    </nav>
+  );
+};
+
 interface DashboardLayoutProps {
   role: AppRole;
   title?: string;
@@ -156,8 +236,16 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3 min-w-0">
-              <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-              <div className="hidden sm:block min-w-0">
+              {/* Desktop sidebar trigger */}
+              <SidebarTrigger className="text-muted-foreground hover:text-foreground hidden md:flex" />
+              {/* Mobile logo */}
+              <button
+                className="md:hidden"
+                onClick={() => navigate("/dashboard")}
+              >
+                <img src="/favicon.ico" alt="Logo" className="w-8 h-8 object-contain rounded-lg" />
+              </button>
+              <div className="min-w-0">
                 <h1 className="font-display font-semibold text-lg truncate">{heading}</h1>
               </div>
             </div>
@@ -192,6 +280,11 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
                     <div className="text-xs text-muted-foreground capitalize mt-0.5">{role} account</div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {role === "student" && (
+                    <DropdownMenuItem onClick={() => navigate("/dashboard/profile")}>
+                      <UserCircle className="h-4 w-4 mr-2" /> My Profile
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut className="h-4 w-4 mr-2" /> Sign out
                   </DropdownMenuItem>
@@ -199,11 +292,15 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 animate-fade-in">
+          {/* Extra bottom padding on mobile so content doesn't hide behind bottom nav */}
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 animate-fade-in pb-24 md:pb-8">
             <div className="max-w-7xl mx-auto w-full">{children}</div>
           </main>
         </div>
       </div>
+      {/* Mobile bottom nav — all roles */}
+      <MobileBottomNav role={role} />
+      <AIChatbot />
     </SidebarProvider>
   );
 };
