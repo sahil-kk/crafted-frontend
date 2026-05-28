@@ -226,7 +226,8 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
 
   // Derive title from path if not given
   const items = navByRole[role];
-  const current = items.find((i) => location.pathname === i.url || location.pathname.startsWith(i.url + "/"));
+  const current = items.find((i) => location.pathname === i.url) ||
+                  items.find((i) => !i.url.endsWith("/dashboard") && i.url !== "/dashboard" && location.pathname.startsWith(i.url + "/"));
   const heading = title ?? current?.title ?? "Dashboard";
 
   return (
