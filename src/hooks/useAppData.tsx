@@ -12,8 +12,9 @@ import {
   Question,
   RecordedClass,
 } from "@/lib/mockData";
-export interface TimetableObj { id?: string; _id?: string; day: string; time: string; subject: string; teacher: string; studentId?: string; }
+export interface TimetableObj { id?: string; _id?: string; day: string; time: string; subject: string; teacher: string; studentId?: string; batch?: string; }
 export interface ResultObj { id?: string; _id?: string; studentId: string; subject: string; examType: string; score: number; maxScore: number; grade?: string; trend?: string; date?: string; }
+export interface PaymentObj { id?: string; _id?: string; studentId: string; studentName: string; amount: number; status: "paid" | "pending" | "overdue"; dueDate: string; paidAt?: string; classGrade?: string; batch?: string; created_at?: string; }
 import { apiClient } from "@/lib/apiClient";
 import { useAuth } from "./useAuth";
 
@@ -21,6 +22,10 @@ interface CreateUserInput {
   email: string;
   full_name: string;
   role: MockUser["role"];
+  course?: string;
+  batch?: string;
+  phone?: string;
+  subject?: string;
 }
 
 interface UpdateUserInput {
@@ -29,6 +34,10 @@ interface UpdateUserInput {
   full_name?: string;
   password?: string;
   role: MockUser["role"];
+  course?: string;
+  batch?: string;
+  phone?: string;
+  subject?: string;
 }
 
 interface CreateCourseInput {
@@ -103,6 +112,10 @@ interface AppDataContextValue extends MockAppState {
   createResult: (res: ResultObj) => void;
   deleteResult: (id: string) => void;
   updateResult: (id: string, res: Partial<ResultObj>) => void;
+  payments: PaymentObj[];
+  createPayment: (input: PaymentObj) => void;
+  deletePayment: (id: string) => void;
+  updatePayment: (id: string, input: Partial<PaymentObj>) => void;
 }
 
 const STORAGE_KEY = "ui-only-school-app";
@@ -121,6 +134,7 @@ const loadState = (): MockAppState => {
 
 export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<MockAppState>(initialMockState);
+  const [payments, setPayments] = useState<PaymentObj[]>([]);
   const { session } = useAuth();
   
   useEffect(() => {
@@ -129,7 +143,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     // Fetch initial state from backend
     const fetchAll = async () => {
       try {
-        const [students, teachers, courses, announcements, exams, classes, results, timetables] = await Promise.all([
+        const [students, teachers, courses, announcements, exams, classes, results, timetables, loadedPayments] = await Promise.all([
           apiClient<any[]>("/students").catch(() => []),
           apiClient<any[]>("/admin/teachers").catch(() => []),
           apiClient<any[]>("/courses").catch(() => []),
@@ -138,6 +152,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           apiClient<any[]>("/classes").catch(() => []),
           apiClient<any[]>("/results").catch(() => []),
           apiClient<any[]>("/timetable").catch(() => []),
+          apiClient<any[]>("/payments").catch(() => []),
         ]);
         
         const combinedUsers = [
@@ -145,17 +160,32 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             id: u._id || u.studentId,
             email: u.email,
             full_name: u.name,
-            role: "student",
-            created_at: u.createdAt || new Date().toISOString()
+            role: "student" as const,
+            created_at: u.createdAt || new Date().toISOString(),
+            course: u.course || "General",
+            phone: u.phone || "",
+            batch: u.batch || "Batch 1"
           })),
           ...(teachers || []).map((u: any) => ({
             id: u._id,
             email: u.email,
             full_name: u.name,
-            role: "teacher",
-            created_at: u.createdAt || new Date().toISOString()
+            role: "teacher" as const,
+            created_at: u.createdAt || new Date().toISOString(),
+            phone: u.phone || "",
+            subject: u.subject || "Physics"
           }))
         ];
+
+        if (loadedPayments && loadedPayments.length > 0) {
+          setPayments(loadedPayments);
+        } else {
+          setPayments([
+            { id: "p-1", studentId: "student-1", studentName: "Aarav Patel", amount: 15000, status: "paid", dueDate: new Date(Date.now() - 5*24*60*60*1000).toISOString(), paidAt: new Date(Date.now() - 5*24*60*60*1000).toISOString(), classGrade: "10th", batch: "Batch 1" },
+            { id: "p-2", studentId: "student-2", studentName: "Riya Sharma", amount: 18000, status: "pending", dueDate: new Date(Date.now() + 10*24*60*60*1000).toISOString(), classGrade: "12th", batch: "Batch 3" },
+            { id: "p-3", studentId: "student-3", studentName: "Kabir Mehta", amount: 12000, status: "overdue", dueDate: new Date(Date.now() - 15*24*60*60*1000).toISOString(), classGrade: "8th", batch: "Batch 2" },
+          ]);
+        }
 
         setState(prev => ({
           ...prev,
@@ -217,7 +247,12 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         let body: any = { password, email: input.email, name: input.full_name };
         if (input.role === "student") {
           body.studentId = input.email.split('@')[0];
-          body.course = "General";
+          body.course = input.course || "10th";
+          body.batch = input.batch || "Batch 1";
+          body.phone = input.phone || "";
+        } else {
+          body.phone = input.phone || "";
+          body.subject = input.subject || "Physics";
         }
         const res = await apiClient<any>(endpoint, { method: "POST", body: JSON.stringify(body) });
         
@@ -232,6 +267,10 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
               full_name: input.full_name,
               role: input.role,
               created_at: new Date().toISOString(),
+              course: input.course || (input.role === "student" ? "10th" : undefined),
+              batch: input.batch || (input.role === "student" ? "Batch 1" : undefined),
+              phone: input.phone || "",
+              subject: input.subject || (input.role === "teacher" ? "Physics" : undefined),
             },
             ...prev.users,
           ],
@@ -260,6 +299,10 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         if (input.email !== undefined) body.email = input.email;
         if (input.full_name !== undefined) body.name = input.full_name;
         if (input.password !== undefined) body.password = input.password;
+        if (input.phone !== undefined) body.phone = input.phone;
+        if (input.course !== undefined) body.course = input.course;
+        if (input.batch !== undefined) body.batch = input.batch;
+        if (input.subject !== undefined) body.subject = input.subject;
         
         await apiClient<any>(endpoint, { method: "PATCH", body: JSON.stringify(body) });
         
@@ -268,7 +311,11 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           users: prev.users.map(u => u.id === input.id ? { 
               ...u, 
               email: input.email !== undefined ? input.email : u.email, 
-              full_name: input.full_name !== undefined ? input.full_name : u.full_name 
+              full_name: input.full_name !== undefined ? input.full_name : u.full_name,
+              phone: input.phone !== undefined ? input.phone : u.phone,
+              course: input.course !== undefined ? input.course : u.course,
+              batch: input.batch !== undefined ? input.batch : u.batch,
+              subject: input.subject !== undefined ? input.subject : u.subject,
             } : u)
         }));
       } catch (err) {
@@ -611,7 +658,42 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         };
       });
     },
-  }), [state]);
+    payments,
+    createPayment: async (input) => {
+      try {
+        const res = await apiClient<any>("/payments", {
+          method: "POST",
+          body: JSON.stringify(input),
+        });
+        setPayments((prev) => [res, ...prev]);
+      } catch (e) {
+        setPayments((prev) => [{ ...input, id: createId("pay") }, ...prev]);
+      }
+    },
+    deletePayment: async (id) => {
+      try {
+        await apiClient(`/payments/${id}`, { method: "DELETE" });
+        setPayments((prev) => prev.filter((p) => p._id !== id && p.id !== id));
+      } catch (e) {
+        setPayments((prev) => prev.filter((p) => p._id !== id && p.id !== id));
+      }
+    },
+    updatePayment: async (id, input) => {
+      try {
+        const res = await apiClient<any>(`/payments/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(input),
+        });
+        setPayments((prev) =>
+          prev.map((p) => (p._id === id || p.id === id ? { ...p, ...res } : p))
+        );
+      } catch (e) {
+        setPayments((prev) =>
+          prev.map((p) => (p._id === id || p.id === id ? { ...p, ...input } : p))
+        );
+      }
+    },
+  }), [state, payments]);
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
 };

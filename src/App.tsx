@@ -23,6 +23,8 @@ import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminPayments from "./pages/admin/AdminPayments";
+import AdminGrowthMeter from "./pages/admin/AdminGrowthMeter";
 
 import { ManageUsersPage } from "./pages/shared/ManageUsersPage";
 import ClassesManager from "./pages/shared/ClassesManager";
@@ -82,6 +84,8 @@ const App = () => (
             <Route path="/admin/settings" element={<RoleRoute allow={["admin"]} fallback="/admin"><AdminSettings /></RoleRoute>} />
             <Route path="/admin/results" element={<RoleRoute allow={["admin"]} fallback="/admin"><ResultsManager viewerRole="admin" /></RoleRoute>} />
             <Route path="/admin/timetable" element={<RoleRoute allow={["admin"]} fallback="/admin"><TimetableManager viewerRole="admin" /></RoleRoute>} />
+            <Route path="/admin/payments" element={<RoleRoute allow={["admin"]} fallback="/admin"><AdminPayments /></RoleRoute>} />
+            <Route path="/admin/growth-meter" element={<RoleRoute allow={["admin"]} fallback="/admin"><AdminGrowthMeter /></RoleRoute>} />
 
             <Route path="*" element={<NotFound />} />
             </Routes>

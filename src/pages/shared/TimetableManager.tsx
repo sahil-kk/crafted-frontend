@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, CalendarDays, Pencil } from "lucide-react";
+import { Plus, Trash2, CalendarDays, Pencil, Grid, List, Clock, User, Users, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import { AppRole } from "@/hooks/useAuth";
 import { useAppData, TimetableObj } from "@/hooks/useAppData";
@@ -20,14 +20,19 @@ const TimetableManager = ({ viewerRole }: Props) => {
   const { users, timetables, createTimetable, deleteTimetable, updateTimetable } = useAppData();
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [selectedBatchFilter, setSelectedBatchFilter] = useState<string>("all");
+
   const students = users.filter((u) => u.role === "student");
-  
+
+  // Form State
   const [form, setForm] = useState({
     day: "Monday",
     time: "",
     subject: "",
     teacher: "",
-    studentId: "" 
+    studentId: "",
+    batch: ""
   });
 
   const [editForm, setEditForm] = useState({
@@ -36,7 +41,8 @@ const TimetableManager = ({ viewerRole }: Props) => {
     time: "",
     subject: "",
     teacher: "",
-    studentId: "" 
+    studentId: "",
+    batch: ""
   });
 
   const handleOpenEdit = (t: any) => {
@@ -46,7 +52,8 @@ const TimetableManager = ({ viewerRole }: Props) => {
       time: t.time || "",
       subject: t.subject || "",
       teacher: t.teacher || "",
-      studentId: t.studentId || ""
+      studentId: t.studentId || "",
+      batch: t.batch || ""
     });
     setEditOpen(true);
   };
@@ -58,7 +65,8 @@ const TimetableManager = ({ viewerRole }: Props) => {
       time: editForm.time,
       subject: editForm.subject,
       teacher: editForm.teacher,
-      studentId: editForm.studentId || undefined
+      studentId: editForm.studentId || undefined,
+      batch: editForm.batch || undefined
     });
     toast.success("Schedule updated!");
     setEditOpen(false);
@@ -71,109 +79,242 @@ const TimetableManager = ({ viewerRole }: Props) => {
       time: form.time,
       subject: form.subject,
       teacher: form.teacher,
-      studentId: form.studentId || undefined
+      studentId: form.studentId || undefined,
+      batch: form.batch || undefined
     });
     toast.success("Schedule added!");
     setOpen(false);
-    setForm({ day: "Monday", time: "", subject: "", teacher: "", studentId: "" });
+    setForm({ day: "Monday", time: "", subject: "", teacher: "", studentId: "", batch: "" });
   };
 
+  // Filter timetables list
+  const filteredTimetables = useMemo(() => {
+    if (!timetables) return [];
+    return timetables.filter((t: TimetableObj) => {
+      if (selectedBatchFilter === "all") return true;
+      if (selectedBatchFilter === "global") return !t.studentId && !t.batch;
+      if (selectedBatchFilter === "individual") return !!t.studentId;
+      return t.batch === selectedBatchFilter;
+    });
+  }, [timetables, selectedBatchFilter]);
+
+  // Color helper for subjects
+  const getSubjectColor = (subject: string) => {
+    const sub = subject.toLowerCase();
+    if (sub.includes("math") || sub.includes("mat")) {
+      return "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-250 dark:border-emerald-800/30";
+    }
+    if (sub.includes("phys") || sub.includes("phy")) {
+      return "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300 border border-indigo-250 dark:border-indigo-800/30";
+    }
+    if (sub.includes("chem") || sub.includes("che")) {
+      return "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border border-amber-250 dark:border-amber-800/30";
+    }
+    if (sub.includes("biol") || sub.includes("bio")) {
+      return "bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 border border-rose-250 dark:border-rose-800/30";
+    }
+    return "bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800";
+  };
+
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
   return (
-    <DashboardLayout role={viewerRole}>
+    <DashboardLayout role={viewerRole} title="Timetable Manager">
       <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
         <div>
-          <h2 className="font-display text-2xl font-bold">Timetables</h2>
-          <p className="text-muted-foreground mt-1">Assign schedules optionally targeting specific students</p>
+          <h2 className="font-display text-2xl font-bold">Weekly Timetable</h2>
+          <p className="text-muted-foreground mt-1">Manage weekly periods, student batches, and tutor assignments</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button variant="hero"><Plus className="h-4 w-4 mr-2" />Add Entry</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={onCreate}>
-              <DialogHeader><DialogTitle>New Schedule Block</DialogTitle></DialogHeader>
-              <div className="space-y-4 py-4">
+        <div className="flex items-center gap-2">
+          {/* View Toggles */}
+          <div className="flex bg-muted p-1 rounded-lg">
+            <Button
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("grid")}
+              className="h-8 px-3"
+            >
+              <Grid className="h-4 w-4 mr-1.5" /> Grid View
+            </Button>
+            <Button
+              variant={viewMode === "table" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("table")}
+              className="h-8 px-3"
+            >
+              <List className="h-4 w-4 mr-1.5" /> Table View
+            </Button>
+          </div>
+
+          {viewerRole === "admin" && (
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button variant="hero"><Plus className="h-4 w-4 mr-2" />Add Period</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <form onSubmit={onCreate}>
+                  <DialogHeader>
+                    <DialogTitle>New Schedule Block</DialogTitle>
+                    <DialogDescription>Create a scheduled class and assign to batches or students.</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Target Batch</Label>
+                        <Select
+                          value={form.batch || "none"}
+                          onValueChange={(value) => setForm({ ...form, batch: value === "none" ? "" : value, studentId: "" })}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Broadcast / None" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No Batch Restriction</SelectItem>
+                            <SelectItem value="Batch 1">Batch 1</SelectItem>
+                            <SelectItem value="Batch 2">Batch 2</SelectItem>
+                            <SelectItem value="Batch 3">Batch 3</SelectItem>
+                            <SelectItem value="Batch 4">Batch 4</SelectItem>
+                            <SelectItem value="Batch 5">Batch 5</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Or Student (Optional)</Label>
+                        <Select
+                          value={form.studentId || "none"}
+                          onValueChange={(value) => setForm({ ...form, studentId: value === "none" ? "" : value, batch: "" })}
+                        >
+                          <SelectTrigger><SelectValue placeholder="All Students" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">All Students</SelectItem>
+                            {students.map((student) => (
+                              <SelectItem key={student.id} value={student.id}>
+                                {student.full_name || student.email}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Day</Label>
+                        <Select value={form.day} onValueChange={(v) => setForm({ ...form, day: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {daysOfWeek.map((d) => (
+                              <SelectItem key={d} value={d}>{d}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Time Range</Label>
+                        <Input required placeholder="eg. 09:00 AM - 10:00 AM" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Subject Name</Label>
+                        <Input required placeholder="e.g. Mathematics, Physics" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
+                      </div>
+                      <div>
+                        <Label>Instructor</Label>
+                        <Input required placeholder="e.g. Mrs. Sharma" value={form.teacher} onChange={(e) => setForm({ ...form, teacher: e.target.value })} />
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" variant="hero">Add to Schedule</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+      </div>
+
+      {/* Filters bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6 bg-card p-4 rounded-xl shadow-card border border-border/60">
+        <div className="flex flex-wrap items-center gap-2">
+          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mr-2">Filter Timetable:</Label>
+          <Button variant={selectedBatchFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setSelectedBatchFilter("all")}>All Schedules</Button>
+          <Button variant={selectedBatchFilter === "Batch 1" ? "default" : "outline"} size="sm" onClick={() => setSelectedBatchFilter("Batch 1")}>Batch 1</Button>
+          <Button variant={selectedBatchFilter === "Batch 2" ? "default" : "outline"} size="sm" onClick={() => setSelectedBatchFilter("Batch 2")}>Batch 2</Button>
+          <Button variant={selectedBatchFilter === "Batch 3" ? "default" : "outline"} size="sm" onClick={() => setSelectedBatchFilter("Batch 3")}>Batch 3</Button>
+          <Button variant={selectedBatchFilter === "Batch 4" ? "default" : "outline"} size="sm" onClick={() => setSelectedBatchFilter("Batch 4")}>Batch 4</Button>
+          <Button variant={selectedBatchFilter === "Batch 5" ? "default" : "outline"} size="sm" onClick={() => setSelectedBatchFilter("Batch 5")}>Batch 5</Button>
+          <Button variant={selectedBatchFilter === "global" ? "default" : "outline"} size="sm" onClick={() => setSelectedBatchFilter("global")}>Global / Broadcast</Button>
+          <Button variant={selectedBatchFilter === "individual" ? "default" : "outline"} size="sm" onClick={() => setSelectedBatchFilter("individual")}>Individual</Button>
+        </div>
+      </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md">
+          <form onSubmit={onEdit}>
+            <DialogHeader>
+              <DialogTitle>Edit Schedule Block</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                   <Label>Target Student (Optional)</Label>
-                   <Select value={form.studentId || "none"} onValueChange={(value) => setForm({ ...form, studentId: value === "none" ? "" : value })}>
-                    <SelectTrigger><SelectValue placeholder="Broadcast to All" /></SelectTrigger>
+                  <Label>Target Batch</Label>
+                  <Select
+                    value={editForm.batch || "none"}
+                    onValueChange={(value) => setEditForm({ ...editForm, batch: value === "none" ? "" : value, studentId: "" })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Broadcast / None" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Broadcast to All Students</SelectItem>
-                      {students.map((student) => <SelectItem key={student.id} value={student.id}>{student.full_name || student.email}</SelectItem>)}
+                      <SelectItem value="none">No Batch Restriction</SelectItem>
+                      <SelectItem value="Batch 1">Batch 1</SelectItem>
+                      <SelectItem value="Batch 2">Batch 2</SelectItem>
+                      <SelectItem value="Batch 3">Batch 3</SelectItem>
+                      <SelectItem value="Batch 4">Batch 4</SelectItem>
+                      <SelectItem value="Batch 5">Batch 5</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Day</Label>
-                    <Select value={form.day} onValueChange={(v) => setForm({ ...form, day: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(d => (
-                           <SelectItem key={d} value={d}>{d}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Time Range</Label>
-                    <Input required placeholder="eg. 09:00 AM - 10:30 AM" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Subject</Label>
-                    <Input required value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label>Instructor</Label>
-                    <Input required value={form.teacher} onChange={(e) => setForm({ ...form, teacher: e.target.value })} />
-                  </div>
+                <div>
+                  <Label>Or Student (Optional)</Label>
+                  <Select
+                    value={editForm.studentId || "none"}
+                    onValueChange={(value) => setEditForm({ ...editForm, studentId: value === "none" ? "" : value, batch: "" })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="All Students" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">All Students</SelectItem>
+                      {students.map((student) => (
+                        <SelectItem key={student.id} value={student.id}>
+                          {student.full_name || student.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              <DialogFooter>
-                <Button type="submit" variant="hero">Add to Schedule</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
 
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
-          <form onSubmit={onEdit}>
-            <DialogHeader><DialogTitle>Edit Schedule Block</DialogTitle></DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                 <Label>Target Student (Optional)</Label>
-                 <Select value={editForm.studentId || "none"} onValueChange={(value) => setEditForm({ ...editForm, studentId: value === "none" ? "" : value })}>
-                  <SelectTrigger><SelectValue placeholder="Broadcast to All" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Broadcast to All Students</SelectItem>
-                    {students.map((student) => <SelectItem key={student.id} value={student.id}>{student.full_name || student.email}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Day</Label>
                   <Select value={editForm.day} onValueChange={(v) => setEditForm({ ...editForm, day: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(d => (
-                         <SelectItem key={d} value={d}>{d}</SelectItem>
+                      {daysOfWeek.map((d) => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label>Time Range</Label>
-                  <Input required placeholder="eg. 09:00 AM - 10:30 AM" value={editForm.time} onChange={(e) => setEditForm({ ...editForm, time: e.target.value })} />
+                  <Input required placeholder="eg. 09:00 AM - 10:00 AM" value={editForm.time} onChange={(e) => setEditForm({ ...editForm, time: e.target.value })} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Subject</Label>
+                  <Label>Subject Name</Label>
                   <Input required value={editForm.subject} onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })} />
                 </div>
                 <div>
@@ -189,55 +330,180 @@ const TimetableManager = ({ viewerRole }: Props) => {
         </DialogContent>
       </Dialog>
 
-      <Card className="p-4 shadow-card border-border/60">
-        {!timetables || timetables.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="h-14 w-14 rounded-2xl bg-primary-soft flex items-center justify-center mx-auto mb-3">
-              <CalendarDays className="h-6 w-6 text-primary" />
-            </div>
-            <p className="text-sm text-muted-foreground">No timetable blocks scheduled.</p>
+      {/* Main Content Area */}
+      {filteredTimetables.length === 0 ? (
+        <Card className="p-16 text-center border-border/60 shadow-card">
+          <div className="h-16 w-16 rounded-2xl bg-primary-soft flex items-center justify-center mx-auto mb-4">
+            <CalendarDays className="h-8 w-8 text-primary" />
           </div>
-        ) : (
+          <h3 className="font-semibold text-lg">No timetable blocks found</h3>
+          <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+            Try choosing a different filter or create a new schedule entry block.
+          </p>
+        </Card>
+      ) : viewMode === "grid" ? (
+        /* Visual Schedule Grid View */
+        <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-4">
+          {daysOfWeek.map((day) => {
+            const dayPeriods = filteredTimetables.filter((t) => t.day === day);
+            return (
+              <div key={day} className="flex flex-col gap-3">
+                {/* Day Header */}
+                <div className="bg-primary/5 dark:bg-primary-soft/10 text-center py-2.5 rounded-lg border border-primary/10">
+                  <span className="font-display font-bold text-sm tracking-wide text-foreground">{day}</span>
+                  <span className="block text-[10px] text-muted-foreground font-semibold uppercase mt-0.5">{dayPeriods.length} Classes</span>
+                </div>
+
+                {/* Period Cards */}
+                <div className="flex flex-col gap-2.5 flex-1 min-h-[250px] bg-muted/20 dark:bg-muted/5 p-2 rounded-xl border border-dashed border-border/40">
+                  {dayPeriods.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center text-center py-8">
+                      <span className="text-[11px] text-muted-foreground font-medium italic">No periods</span>
+                    </div>
+                  ) : (
+                    dayPeriods.map((period: TimetableObj) => {
+                      const studentTarget = students.find((s) => s.id === period.studentId);
+                      return (
+                        <div
+                          key={period._id || period.id}
+                          className={`p-3.5 rounded-lg shadow-sm flex flex-col gap-2 transition-all hover:shadow-md relative group ${getSubjectColor(period.subject)}`}
+                        >
+                          {/* Subject and Actions */}
+                          <div className="flex items-start justify-between gap-1">
+                            <span className="font-bold text-xs leading-tight tracking-tight uppercase line-clamp-2">{period.subject}</span>
+                            {viewerRole === "admin" && (
+                              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity absolute right-1.5 top-1.5 bg-background/95 dark:bg-background/80 p-0.5 rounded shadow-sm">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEdit(period)}
+                                  className="p-1 hover:text-primary transition-colors text-muted-foreground"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm("Delete this entry?")) {
+                                      deleteTimetable(period._id! || period.id!);
+                                      toast.success("Entry removed");
+                                    }
+                                  }}
+                                  className="p-1 hover:text-destructive transition-colors text-muted-foreground"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Time */}
+                          <div className="flex items-center gap-1.5 text-[10px] opacity-90 font-medium">
+                            <Clock className="h-3 w-3 shrink-0" />
+                            <span>{period.time}</span>
+                          </div>
+
+                          {/* Teacher */}
+                          <div className="flex items-center gap-1.5 text-[10px] opacity-90 font-medium">
+                            <GraduationCap className="h-3 w-3 shrink-0" />
+                            <span>{period.teacher}</span>
+                          </div>
+
+                          {/* Target Badge */}
+                          {period.batch && (
+                            <div className="mt-1 self-start inline-flex items-center gap-1 bg-foreground/10 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
+                              <Users className="h-2.5 w-2.5" />
+                              <span>{period.batch}</span>
+                            </div>
+                          )}
+                          {period.studentId && (
+                            <div className="mt-1 self-start inline-flex items-center gap-1 bg-foreground/10 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider max-w-full truncate">
+                              <User className="h-2.5 w-2.5" />
+                              <span className="truncate">{studentTarget ? studentTarget.full_name : period.studentId}</span>
+                            </div>
+                          )}
+                          {!period.batch && !period.studentId && (
+                            <div className="mt-1 self-start inline-flex items-center gap-1 bg-foreground/5 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider text-foreground/70">
+                              <span>Global</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* Standard Table View */
+        <Card className="p-4 shadow-card border-border/60">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Target Student</TableHead>
+                <TableHead>Target Batch/Student</TableHead>
                 <TableHead>Day</TableHead>
-                <TableHead>Time</TableHead>
+                <TableHead>Time Block</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead>Instructor</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+                {viewerRole === "admin" && <TableHead className="text-right">Action</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {timetables.map((t: TimetableObj) => {
+              {filteredTimetables.map((t: TimetableObj) => {
                 const stu = students.find((s) => s.id === t.studentId);
                 return (
                   <TableRow key={t._id || t.id}>
-                    <TableCell className="font-medium text-primary">
-                        {stu ? (stu.full_name || stu.email) : (t.studentId ? t.studentId : "Global / All")}
+                    <TableCell className="font-semibold">
+                      {t.batch ? (
+                        <span className="inline-flex items-center gap-1 rounded bg-indigo-50 dark:bg-indigo-950/20 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:text-indigo-400">
+                          {t.batch}
+                        </span>
+                      ) : stu ? (
+                        <span className="inline-flex items-center gap-1 rounded bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                          {stu.full_name || stu.email}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs italic">Global / Broadcast</span>
+                      )}
                     </TableCell>
-                    <TableCell>{t.day}</TableCell>
-                    <TableCell>{t.time}</TableCell>
-                    <TableCell>{t.subject}</TableCell>
-                    <TableCell>{t.teacher}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-1 justify-end shrink-0">
-                        <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(t)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => deleteTimetable(t._id! || t.id!)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
+                    <TableCell className="font-semibold text-foreground">{t.day}</TableCell>
+                    <TableCell className="text-sm font-medium">{t.time}</TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold bg-muted text-foreground">
+                        {t.subject}
+                      </span>
                     </TableCell>
+                    <TableCell className="text-sm text-foreground/80">{t.teacher}</TableCell>
+                    {viewerRole === "admin" && (
+                      <TableCell className="text-right">
+                        <div className="flex gap-1 justify-end shrink-0">
+                          <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(t)} className="hover:bg-primary-soft hover:text-primary">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              if (confirm("Delete this?")) {
+                                deleteTimetable(t._id! || t.id!);
+                                toast.success("Entry deleted");
+                              }
+                            }}
+                            className="hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })}
             </TableBody>
           </Table>
-        )}
-      </Card>
+        </Card>
+      )}
     </DashboardLayout>
   );
 };

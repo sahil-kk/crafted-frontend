@@ -6,6 +6,10 @@ export interface MockUser {
   role: AppRole;
   full_name: string;
   created_at: string;
+  course?: string;
+  batch?: string;
+  phone?: string;
+  subject?: string;
 }
 
 export interface Course {

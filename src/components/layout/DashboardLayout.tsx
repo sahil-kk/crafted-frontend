@@ -3,9 +3,8 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   GraduationCap, Home, Newspaper, BookOpen, FileText, BarChart3,
   Bell, LogOut, Menu, Users, Megaphone, Settings, ClipboardList, Calendar,
-  UserCircle, Video
+  UserCircle, Video, CreditCard, TrendingUp
 } from "lucide-react";
-import { AIChatbot } from "@/components/AIChatbot";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -45,10 +44,11 @@ const navByRole: Record<AppRole, NavItem[]> = {
     { title: "Timetable", url: "/admin/timetable", icon: Calendar },
     { title: "Students", url: "/admin/students", icon: Users },
     { title: "Teachers", url: "/admin/teachers", icon: GraduationCap },
+    { title: "Payments", url: "/admin/payments", icon: CreditCard },
+    { title: "Growth Meter", url: "/admin/growth-meter", icon: TrendingUp },
     { title: "Courses", url: "/admin/courses", icon: BookOpen },
     { title: "Exams", url: "/admin/exams", icon: ClipboardList },
     { title: "Results", url: "/admin/results", icon: BarChart3 },
-    { title: "Announcements", url: "/admin/announcements", icon: Megaphone },
     { title: "Settings", url: "/admin/settings", icon: Settings },
   ],
 };
@@ -301,7 +301,6 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
       </div>
       {/* Mobile bottom nav — all roles */}
       <MobileBottomNav role={role} />
-      <AIChatbot />
     </SidebarProvider>
   );
 };
