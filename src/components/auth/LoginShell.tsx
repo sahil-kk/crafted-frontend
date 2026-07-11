@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import {
@@ -9,7 +9,9 @@ import {
   User,
   Lock,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +38,9 @@ export const LoginShell = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const formPanelRef = useRef<HTMLDivElement>(null);
+  const identifierInputRef = useRef<HTMLInputElement>(null);
 
   // Clear fields when role changes
   useEffect(() => {
@@ -45,6 +50,12 @@ export const LoginShell = () => {
 
   const handleRoleChange = (role: LoginRole) => {
     setSearchParams({ role });
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      window.setTimeout(() => {
+        formPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        identifierInputRef.current?.focus({ preventScroll: true });
+      }, 80);
+    }
   };
 
   const handleLogin = async (e: FormEvent) => {
@@ -244,7 +255,10 @@ export const LoginShell = () => {
       </div>
 
       {/* Right: Form Panel */}
-      <div className="w-full lg:w-[42%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-slate-50 dark:bg-slate-950 border-t lg:border-t-0 lg:border-l border-slate-200/50 dark:border-slate-800/50 relative z-10">
+      <div
+        ref={formPanelRef}
+        className="w-full lg:w-[42%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-slate-50 dark:bg-slate-950 border-t lg:border-t-0 lg:border-l border-slate-200/50 dark:border-slate-800/50 relative z-10 scroll-mt-0"
+      >
         <div className="w-full max-w-md animate-fade-in">
           {/* Card */}
           <Card className="p-8 sm:p-10 shadow-card border-slate-100 dark:border-slate-800/50 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl relative overflow-hidden">
@@ -269,6 +283,7 @@ export const LoginShell = () => {
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
                   <Input
+                    ref={identifierInputRef}
                     id="identifier"
                     type="text"
                     placeholder={currentConfig.idPlaceholder}
@@ -291,14 +306,23 @@ export const LoginShell = () => {
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="********"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="current-password"
                     required
-                    className="pl-11 h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium transition-smooth"
+                    className="pl-11 pr-12 h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium transition-smooth"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 dark:text-slate-500 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
