@@ -21,6 +21,12 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 const STORAGE_KEY = "ui-only-auth";
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+
+interface StoredAuth {
+  user: MockUser;
+  savedAt?: number;
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<MockUser | null>(null);
@@ -34,7 +40,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const token = getAuthToken();
     if (raw && token) {
       try {
-        const stored = JSON.parse(raw) as { user: MockUser };
+        const stored = JSON.parse(raw) as StoredAuth;
+        const savedAt = stored.savedAt || 0;
+        const isExpired = Date.now() - savedAt > SESSION_TTL_MS;
+        if (!stored.user || isExpired) {
+          window.localStorage.removeItem(STORAGE_KEY);
+          removeAuthToken();
+          setLoading(false);
+          return;
+        }
         setUser(stored.user);
         setRole(stored.user.role);
         setSession({ access_token: token, user: stored.user });
@@ -48,6 +62,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (!session) return;
+
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    let savedAt = Date.now();
+    try {
+      const stored = raw ? JSON.parse(raw) as StoredAuth : null;
+      savedAt = stored?.savedAt || savedAt;
+    } catch {
+      savedAt = Date.now();
+    }
+
+    const remainingMs = SESSION_TTL_MS - (Date.now() - savedAt);
+    if (remainingMs <= 0) {
+      window.localStorage.removeItem(STORAGE_KEY);
+      removeAuthToken();
+      setUser(null);
+      setSession(null);
+      setRole(null);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      window.localStorage.removeItem(STORAGE_KEY);
+      removeAuthToken();
+      setUser(null);
+      setSession(null);
+      setRole(null);
+    }, remainingMs);
+
+    return () => window.clearTimeout(timeout);
+  }, [session]);
 
   const signIn = async (nextRole: AppRole, identifier: string, password?: string) => {
     const pass = password || "password123"; // Fallback for UI if empty initially
@@ -130,7 +177,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(nextUser);
     setRole(nextRole);
     setSession(nextSession);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: nextUser }));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: nextUser, savedAt: Date.now() }));
   };
 
   const signOut = async () => {
