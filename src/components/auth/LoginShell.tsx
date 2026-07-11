@@ -162,26 +162,26 @@ export const LoginShell = () => {
   const currentConfig = roleConfig[activeRole] || roleConfig.student;
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-950 text-white overflow-hidden relative font-sans">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-950 text-white lg:overflow-hidden relative font-sans">
       {/* Left: Branding & Selection */}
-      <div className="w-full lg:w-[58%] p-8 sm:p-12 lg:p-16 flex flex-col justify-between relative bg-gradient-primary z-10">
+      <div className="w-full lg:w-[58%] px-5 py-5 sm:p-10 lg:p-16 flex flex-col justify-between relative bg-gradient-primary z-10">
         {/* Decorative bright ambient background glows */}
         <div className="absolute top-1/4 -left-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-yellow-300/10 rounded-full blur-[100px] pointer-events-none" />
 
         {/* Top: Logo */}
-        <div className="flex items-center gap-2.5 mb-8 lg:mb-0">
+        <div className="flex items-center justify-center lg:justify-start gap-2.5 mb-5 lg:mb-0">
           <img 
             src="/logo.svg" 
             alt="Crafted" 
-            className="h-16 w-auto max-w-[200px] object-contain bg-white rounded-2xl shadow-elevated p-3 pl-4 pr-4 transition-all duration-300 hover:scale-105" 
+            className="h-12 sm:h-14 lg:h-16 w-auto max-w-[168px] sm:max-w-[190px] lg:max-w-[200px] object-contain bg-white rounded-xl lg:rounded-2xl shadow-elevated px-4 py-2.5 lg:p-3 lg:pl-4 lg:pr-4 transition-all duration-300 hover:scale-105" 
           />
         </div>
 
         {/* Center Content */}
-        <div className="space-y-8 my-auto max-w-2xl py-6 lg:py-0">
-          <div className="space-y-4">
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] text-balance">
+        <div className="space-y-5 lg:space-y-8 my-auto max-w-2xl py-1 lg:py-0">
+          <div className="space-y-3 lg:space-y-4">
+            <h1 className="hidden sm:block font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] text-balance">
               Welcome to{" "}
               <span className="block mt-3 lg:inline-block">
                 <span className="inline-flex bg-white px-5 py-2 rounded-2xl shadow-elevated border border-orange-100 hover:rotate-1 transition-transform duration-200">
@@ -191,29 +191,31 @@ export const LoginShell = () => {
                 </span>
               </span>
             </h1>
-            <p className="text-white text-base sm:text-lg leading-relaxed max-w-xl font-medium">
+            <p className="text-white text-center lg:text-left text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 font-semibold sm:font-medium">
               Empowering education through innovative learning management. Connect students, teachers, and administrators in one powerful platform.
             </p>
           </div>
 
           {/* Role selection card grid */}
-          <div className="space-y-4 pt-4">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/90">
-              <Sparkles className="h-4 w-4 text-white animate-pulse" />
+          <div className="space-y-3 lg:space-y-4 pt-1 lg:pt-4">
+            <div className="flex items-center justify-center lg:justify-start gap-2 text-xs font-bold uppercase tracking-wider text-white/90">
+              <Sparkles className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-white animate-pulse" />
               <span>Select Your Role</span>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               {roleCards.map((rc) => {
                 const IconComponent = rc.icon;
                 const isSelected = activeRole === rc.id;
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={rc.id}
                     onClick={() => handleRoleChange(rc.id)}
-                    className={`relative rounded-2xl p-5 cursor-pointer border transition-all duration-300 flex flex-col items-center lg:items-start text-center lg:text-left gap-3 group ${
+                    aria-pressed={isSelected}
+                    className={`relative min-h-[104px] lg:min-h-0 rounded-2xl p-3.5 lg:p-5 cursor-pointer border transition-all duration-300 flex flex-col items-center lg:items-start text-center lg:text-left gap-2.5 lg:gap-3 group ${
                       isSelected
-                        ? "bg-white/20 border-white shadow-[0_10px_30px_rgba(0,0,0,0.15)] ring-4 ring-white/10 scale-[1.03]"
+                        ? "bg-white/20 border-white shadow-[0_10px_30px_rgba(0,0,0,0.15)] ring-2 lg:ring-4 ring-white/10"
                         : "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 hover:scale-[1.01]"
                     }`}
                   >
@@ -230,18 +232,18 @@ export const LoginShell = () => {
                         ? "bg-white text-primary shadow-sm" 
                         : "bg-white/10 text-white group-hover:bg-white/20"
                     }`}>
-                      <IconComponent className="h-6 w-6" />
+                      <IconComponent className="h-5 w-5 lg:h-6 lg:w-6" />
                     </div>
 
-                    <div className="space-y-1">
-                      <div className="font-bold text-sm text-white">
+                    <div className="space-y-1 min-w-0">
+                      <div className="font-bold text-sm text-white leading-tight">
                         {rc.title}
                       </div>
-                      <div className="text-xs text-white/80 leading-normal line-clamp-2">
+                      <div className="text-[11px] lg:text-xs text-white/80 leading-snug line-clamp-2">
                         {rc.description}
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -249,7 +251,7 @@ export const LoginShell = () => {
         </div>
 
         {/* Footer */}
-        <div className="text-sm text-white/70 mt-8 lg:mt-0 font-medium">
+        <div className="text-xs sm:text-sm text-white/70 mt-5 lg:mt-0 font-medium">
           (c) {new Date().getFullYear()} Crafted. All rights reserved.
         </div>
       </div>
@@ -257,25 +259,25 @@ export const LoginShell = () => {
       {/* Right: Form Panel */}
       <div
         ref={formPanelRef}
-        className="w-full lg:w-[42%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-slate-50 dark:bg-slate-950 border-t lg:border-t-0 lg:border-l border-slate-200/50 dark:border-slate-800/50 relative z-10 scroll-mt-0"
+        className="w-full lg:w-[42%] flex items-center justify-center px-4 py-5 sm:p-10 lg:p-16 bg-slate-50 dark:bg-slate-950 border-t lg:border-t-0 lg:border-l border-slate-200/50 dark:border-slate-800/50 relative z-10 scroll-mt-0"
       >
         <div className="w-full max-w-md animate-fade-in">
           {/* Card */}
-          <Card className="p-8 sm:p-10 shadow-card border-slate-100 dark:border-slate-800/50 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl relative overflow-hidden">
+          <Card className="p-6 sm:p-8 lg:p-10 shadow-card border-slate-100 dark:border-slate-800/50 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl lg:rounded-3xl relative overflow-hidden">
             {/* Background design accents */}
             <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/5 blur-xl pointer-events-none" />
             <div className="absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-primary/5 blur-xl pointer-events-none" />
 
-            <div className="mb-8">
+            <div className="mb-6 lg:mb-8">
               <div className={`inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border ${currentConfig.badgeColor} mb-4`}>
                 <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
                 {currentConfig.badgeText}
               </div>
-              <h2 className="font-display text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{currentConfig.title}</h2>
+              <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{currentConfig.title}</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">{currentConfig.subtitle}</p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-4 lg:space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="identifier" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                   {currentConfig.idLabel}
