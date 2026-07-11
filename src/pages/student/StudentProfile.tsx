@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,10 @@ import {
 
 const StudentProfile = () => {
   const { user } = useAuth();
-  const { exams, results, timetables, users } = useAppData();
+  const { exams, results, timetables, users, updateUser } = useAppData();
   const fileRef = useRef<HTMLInputElement>(null);
   const currentStudent = users.find((item) => item.id === user?.id);
 
-  const profileStorageKey = useMemo(() => `student-profile-${user?.id || "guest"}`, [user?.id]);
   const [photo, setPhoto] = useState<string | null>(currentStudent?.profilePhoto || user?.profilePhoto || null);
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState(currentStudent?.full_name || user?.full_name || user?.email?.split("@")[0] || "Student");
@@ -32,33 +31,14 @@ const StudentProfile = () => {
   const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
-    const backendPhoto = currentStudent?.profilePhoto || user?.profilePhoto;
+    const backendPhoto = currentStudent?.profilePhoto ?? user?.profilePhoto ?? "";
     const backendName = currentStudent?.full_name || user?.full_name;
-    if (backendPhoto) setPhoto(backendPhoto);
+    setPhoto(backendPhoto || null);
     if (backendName) {
       setDisplayName(backendName);
       setSavedName(backendName);
     }
-
-    try {
-      const raw = window.localStorage.getItem(profileStorageKey);
-      if (!raw) return;
-      const saved = JSON.parse(raw) as { photo?: string; fullName?: string };
-      if (!backendPhoto && saved.photo) setPhoto(saved.photo);
-      if (!backendName && saved.fullName) {
-        setDisplayName(saved.fullName);
-        setSavedName(saved.fullName);
-      }
-    } catch {
-      window.localStorage.removeItem(profileStorageKey);
-    }
-  }, [currentStudent?.full_name, currentStudent?.profilePhoto, profileStorageKey, user?.full_name, user?.profilePhoto]);
-
-  const persistProfile = (next: { photo?: string | null; fullName?: string }) => {
-    const current = { photo, fullName };
-    const updated = { ...current, ...next };
-    window.localStorage.setItem(profileStorageKey, JSON.stringify(updated));
-  };
+  }, [currentStudent?.full_name, currentStudent?.profilePhoto, user?.full_name, user?.profilePhoto]);
 
   const fullName = savedName || user?.full_name || user?.email?.split("@")[0] || "Student";
   const studentId = user?.id?.toString().slice(-6).toUpperCase() || "------";
@@ -95,16 +75,17 @@ const StudentProfile = () => {
     reader.onload = async () => {
       const dataUrl = String(reader.result || "");
       setPhoto(dataUrl);
-      persistProfile({ photo: dataUrl });
       try {
-        await apiClient(`/students/${user?.id}`, {
-          method: "PATCH",
-          body: JSON.stringify({ profilePhoto: dataUrl }),
+        await updateUser({
+          id: user!.id,
+          role: "student",
+          profilePhoto: dataUrl,
         });
         toast.success("Profile photo updated");
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Parent portal will update after the photo is saved";
-        toast.error("Could not sync photo", { description: message });
+        setPhoto(currentStudent?.profilePhoto || user?.profilePhoto || null);
+        const message = err instanceof Error ? err.message : "Please try again.";
+        toast.error("Could not save photo to database", { description: message });
       }
     };
     reader.onerror = () => toast.error("Could not read image");
@@ -119,16 +100,18 @@ const StudentProfile = () => {
     }
     setSavedName(trimmed);
     setDisplayName(trimmed);
-    persistProfile({ fullName: trimmed });
     try {
-      await apiClient(`/students/${user?.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ name: trimmed }),
+      await updateUser({
+        id: user!.id,
+        role: "student",
+        full_name: trimmed,
       });
       toast.success("Profile updated");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Parent portal will update after the profile is saved";
-      toast.error("Could not sync profile", { description: message });
+      setSavedName(currentStudent?.full_name || user?.full_name || "Student");
+      setDisplayName(currentStudent?.full_name || user?.full_name || "Student");
+      const message = err instanceof Error ? err.message : "Please try again.";
+      toast.error("Could not save profile to database", { description: message });
     } finally {
       setEditing(false);
     }
@@ -208,12 +191,17 @@ const StudentProfile = () => {
                   <button
                     onClick={() => {
                       setPhoto(null);
-                      persistProfile({ photo: null });
-                      apiClient(`/students/${user?.id}`, {
-                        method: "PATCH",
-                        body: JSON.stringify({ profilePhoto: "" }),
-                      }).catch(() => undefined);
-                      toast.success("Profile photo removed");
+                      updateUser({
+                        id: user!.id,
+                        role: "student",
+                        profilePhoto: "",
+                      })
+                        .then(() => toast.success("Profile photo removed"))
+                        .catch((err: unknown) => {
+                          setPhoto(currentStudent?.profilePhoto || user?.profilePhoto || null);
+                          const message = err instanceof Error ? err.message : "Please try again.";
+                          toast.error("Could not remove photo from database", { description: message });
+                        });
                     }}
                     className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white text-destructive border border-border flex items-center justify-center shadow hover:bg-secondary transition-colors"
                     title="Remove photo"

@@ -28,6 +28,7 @@ interface CreateUserInput {
   subject?: string;
   linkedStudentId?: string;
   relationship?: string;
+  profilePhoto?: string;
   password?: string;
 }
 
@@ -43,6 +44,7 @@ interface UpdateUserInput {
   subject?: string;
   linkedStudentId?: string;
   relationship?: string;
+  profilePhoto?: string;
 }
 
 interface CreateCourseInput {
@@ -329,6 +331,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         if (input.course !== undefined) body.course = input.course;
         if (input.batch !== undefined) body.batch = input.batch;
         if (input.subject !== undefined) body.subject = input.subject;
+        if (input.profilePhoto !== undefined) body.profilePhoto = input.profilePhoto;
         if (input.linkedStudentId !== undefined) body.studentId = input.linkedStudentId;
         if (input.relationship !== undefined) body.relationship = input.relationship;
         if (input.role === "parent") body.username = input.email;
@@ -345,6 +348,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
               course: input.course !== undefined ? input.course : u.course,
               batch: input.batch !== undefined ? input.batch : u.batch,
               subject: input.subject !== undefined ? input.subject : u.subject,
+              profilePhoto: input.profilePhoto !== undefined ? input.profilePhoto : u.profilePhoto,
               linkedStudentId: input.linkedStudentId !== undefined ? input.linkedStudentId : u.linkedStudentId,
               relationship: input.relationship !== undefined ? input.relationship : u.relationship,
             } : u)

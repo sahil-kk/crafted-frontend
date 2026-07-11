@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -23,35 +23,6 @@ const StudentDashboard = () => {
   const currentStudent = users.find((item) => item.id === user?.id);
 
   const [calDate, setCalDate] = useState<Date | undefined>(new Date());
-  const [savedProfileName, setSavedProfileName] = useState<string | null>(null);
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    if (currentStudent?.full_name || currentStudent?.profilePhoto) {
-      setSavedProfileName(currentStudent.full_name || null);
-      setProfilePhoto(currentStudent.profilePhoto || null);
-      return;
-    }
-
-    const profileKey = `student-profile-${user?.id || "guest"}`;
-    const savedProfile = localStorage.getItem(profileKey);
-    if (!savedProfile) {
-      setSavedProfileName(null);
-      setProfilePhoto(null);
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(savedProfile);
-      setSavedProfileName(parsed.name || null);
-      setProfilePhoto(parsed.photo || null);
-    } catch {
-      setSavedProfileName(null);
-      setProfilePhoto(null);
-    }
-  }, [currentStudent?.full_name, currentStudent?.profilePhoto, user?.id]);
 
   // Real data derivations
   const myResults = (results || []).filter((r: ResultObj) => r.studentId === user?.id);
@@ -75,7 +46,8 @@ const StudentDashboard = () => {
       return ai - bi;
     });
 
-  const displayName = savedProfileName || currentStudent?.full_name || user?.full_name || user?.email?.split("@")[0] || "Student";
+  const displayName = currentStudent?.full_name || user?.full_name || user?.email?.split("@")[0] || "Student";
+  const profilePhoto = currentStudent?.profilePhoto || user?.profilePhoto || null;
   const studentId = user?.id?.toString().slice(-6).toUpperCase() || "------";
   const fullName = displayName;
   const initials = fullName
