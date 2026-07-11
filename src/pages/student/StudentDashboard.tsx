@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -22,6 +22,29 @@ const StudentDashboard = () => {
   const { exams, announcements, results, timetables } = useAppData();
 
   const [calDate, setCalDate] = useState<Date | undefined>(new Date());
+  const [savedProfileName, setSavedProfileName] = useState<string | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const profileKey = `student-profile-${user?.id || "guest"}`;
+    const savedProfile = localStorage.getItem(profileKey);
+    if (!savedProfile) {
+      setSavedProfileName(null);
+      setProfilePhoto(null);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(savedProfile);
+      setSavedProfileName(parsed.name || null);
+      setProfilePhoto(parsed.photo || null);
+    } catch {
+      setSavedProfileName(null);
+      setProfilePhoto(null);
+    }
+  }, [user?.id]);
 
   // Real data derivations
   const myResults = (results || []).filter((r: ResultObj) => r.studentId === user?.id);
@@ -45,50 +68,62 @@ const StudentDashboard = () => {
       return ai - bi;
     });
 
-  const firstName = user?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Student";
+  const displayName = savedProfileName || user?.full_name || user?.email?.split("@")[0] || "Student";
   const studentId = user?.id?.toString().slice(-6).toUpperCase() || "------";
-  const fullName = user?.full_name || user?.email?.split("@")[0] || "Student";
+  const fullName = displayName;
+  const initials = fullName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   // Latest exam marks for display
   const recentMarks = [...myResults].slice(0, 6);
 
   return (
     <DashboardLayout role="student">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
 
         {/* ── LEFT COLUMN ── */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
+        <div className="xl:col-span-8 flex flex-col gap-4 sm:gap-6 min-w-0">
 
           {/* Welcome Banner with Photo + Student ID */}
           <div
-            className="relative overflow-hidden rounded-2xl flex items-center min-h-[160px] sm:min-h-[180px] px-5 py-6"
+            className="relative overflow-hidden rounded-2xl min-h-[164px] sm:min-h-[190px] px-4 sm:px-6 py-5 sm:py-6"
             style={{ background: "linear-gradient(120deg, #fe6519 0%, #ff8147 60%, #ffab76 100%)" }}
           >
+            <div className="absolute inset-0 z-[5] bg-[linear-gradient(to_right,rgba(254,101,25,0.95)_0%,rgba(254,101,25,0.86)_50%,rgba(254,101,25,0.18)_100%)] sm:bg-[linear-gradient(to_right,rgba(254,101,25,0.96)_0%,rgba(254,101,25,0.82)_46%,rgba(254,101,25,0.06)_100%)]" />
+
             {/* Left: Avatar + Info — width-capped so image never overlaps */}
-            <div className="relative z-10 flex items-center gap-4 w-[58%] sm:w-[62%] min-w-0">
+            <div className="relative z-10 flex h-full min-h-[124px] items-center gap-3 sm:gap-5 pr-[112px] sm:pr-[190px] md:pr-[240px] min-w-0">
               {/* Avatar */}
               <div className="shrink-0">
                 <div
-                  className="rounded-2xl border-4 border-white/40 shadow-xl flex items-center justify-center text-white font-bold"
-                  style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)", width: "clamp(52px,14vw,80px)", height: "clamp(52px,14vw,80px)", fontSize: "clamp(18px,5vw,30px)" }}
+                  className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl border-4 border-white/40 shadow-xl flex items-center justify-center text-white font-bold overflow-hidden"
+                  style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(10px)", fontSize: "clamp(18px,5vw,30px)" }}
                 >
-                  {fullName[0].toUpperCase()}
+                  {profilePhoto ? (
+                    <img src={profilePhoto} alt={fullName} className="h-full w-full object-cover" />
+                  ) : (
+                    initials || "S"
+                  )}
                 </div>
               </div>
               {/* Name + ID */}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 mb-1">
+              <div className="min-w-0 flex-1 max-w-[440px]">
+                <div className="flex items-center gap-1.5 mb-1.5">
                   <span className="bg-white/25 text-white text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full tracking-widest uppercase whitespace-nowrap">
-                    ⭐ Gold Member
+                    Gold Member
                   </span>
                 </div>
-                <h2 className="font-display font-bold text-white leading-tight truncate" style={{ fontSize: "clamp(15px, 4.5vw, 28px)" }}>
+                <h2 className="font-display font-bold text-white leading-tight truncate text-[18px] sm:text-2xl lg:text-3xl">
                   {fullName}
                 </h2>
-                <p className="text-white/80 mt-0.5 font-medium tracking-wide" style={{ fontSize: "clamp(10px, 2.8vw, 14px)" }}>
+                <p className="text-white/85 mt-1 font-medium tracking-wide text-xs sm:text-sm">
                   ID: <span className="text-white font-bold">{studentId}</span>
                 </p>
-                <p className="text-white/70 mt-1 line-clamp-1" style={{ fontSize: "clamp(9px, 2.5vw, 12px)" }}>
+                <p className="text-white/75 mt-1.5 line-clamp-2 text-[11px] sm:text-xs max-w-[28rem]">
                   {upcomingExams.length > 0
                     ? `${upcomingExams.length} upcoming exam${upcomingExams.length > 1 ? "s" : ""} scheduled`
                     : announcements?.[0]?.title || "You're all caught up!"}
@@ -97,22 +132,12 @@ const StudentDashboard = () => {
             </div>
 
             {/* Gradient fade — protects text from image bleed-in */}
-            <div
-              className="absolute inset-y-0 pointer-events-none z-[5]"
-              style={{
-                left: "45%",
-                right: 0,
-                background: "linear-gradient(to right, #ff8147 0%, transparent 55%)"
-              }}
-            />
-
             {/* Decorative illustration — always visible, constrained to right zone */}
             <div className="absolute right-0 top-0 bottom-0 flex items-end justify-end opacity-95 pointer-events-none select-none z-[4]">
               <img
                 src="/student_banner.png"
                 alt=""
-                className="object-contain object-bottom drop-shadow-lg"
-                style={{ height: "100%", maxHeight: "clamp(130px, 42vw, 200px)", maxWidth: "clamp(120px, 40vw, 180px)" }}
+                className="h-full max-h-[150px] sm:max-h-[210px] w-[128px] sm:w-[220px] md:w-[270px] object-cover sm:object-contain object-right-bottom drop-shadow-lg"
               />
             </div>
 
@@ -122,22 +147,22 @@ const StudentDashboard = () => {
           </div>
 
           {/* Quick Stats Row */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
             {[
               { label: "Avg Score", value: avgScore !== null ? `${avgScore}%` : "—", icon: Trophy, color: "#fe6519" },
               { label: "Exams", value: exams?.length ?? 0, icon: FileText, color: "#6366f1" },
               { label: "Classes", value: myTimetable.length, icon: CalendarDays, color: "#10b981" },
             ].map((stat) => (
-              <Card key={stat.label} className="p-4 shadow-card border-border/60 flex items-center gap-3">
+              <Card key={stat.label} className="min-h-[74px] p-3 sm:p-4 shadow-card border-border/60 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 sm:gap-3 text-center sm:text-left">
                 <div
-                  className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
+                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: `${stat.color}18` }}
                 >
-                  <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
+                  <stat.icon className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: stat.color }} />
                 </div>
-                <div>
-                  <div className="font-bold text-lg text-foreground leading-none">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+                <div className="min-w-0">
+                  <div className="font-bold text-base sm:text-lg text-foreground leading-none truncate">{stat.value}</div>
+                  <div className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 leading-tight">{stat.label}</div>
                 </div>
               </Card>
             ))}
@@ -145,12 +170,12 @@ const StudentDashboard = () => {
 
           {/* Upcoming Exams */}
           <Card className="shadow-card border-border/60">
-            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border/60">
-              <h3 className="font-display font-bold text-lg text-foreground">Upcoming Exams</h3>
+            <div className="flex items-center justify-between gap-3 px-4 sm:px-6 pt-5 pb-4 border-b border-border/60">
+              <h3 className="font-display font-bold text-base sm:text-lg text-foreground">Upcoming Exams</h3>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs gap-1"
+                className="text-xs gap-1 shrink-0"
                 style={{ color: "#fe6519" }}
                 onClick={() => navigate("/dashboard/exams")}
               >
@@ -159,14 +184,14 @@ const StudentDashboard = () => {
             </div>
             <div className="divide-y divide-border/40">
               {upcomingExams.length === 0 ? (
-                <div className="px-6 py-10 text-center text-sm text-muted-foreground">
-                  No upcoming exams. Relax! 🎉
+                <div className="px-4 sm:px-6 py-10 text-center text-sm text-muted-foreground">
+                  No upcoming exams. Relax!
                 </div>
               ) : (
                 upcomingExams.map((exam: any) => (
                   <div
                     key={exam.id}
-                    className="grid grid-cols-12 gap-3 px-6 py-4 items-center hover:bg-secondary/40 transition-smooth group cursor-pointer"
+                    className="grid grid-cols-12 gap-3 px-4 sm:px-6 py-4 items-center hover:bg-secondary/40 transition-smooth group cursor-pointer"
                     onClick={() => navigate("/dashboard/exams")}
                   >
                     <div className="col-span-6 flex items-center gap-3">
@@ -326,7 +351,7 @@ const StudentDashboard = () => {
         </div>
 
         {/* ── RIGHT COLUMN ── */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
+        <div className="xl:col-span-4 flex flex-col gap-4 sm:gap-6 min-w-0">
 
           {/* Calendar */}
           <Card className="p-2 shadow-card border-border/60 overflow-hidden">

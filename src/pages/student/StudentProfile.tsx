@@ -1,15 +1,19 @@
-import { useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData, ResultObj } from "@/hooks/useAppData";
+import { apiClient } from "@/lib/apiClient";
+import { toast } from "sonner";
 import {
   UserCircle, Camera, Mail, Hash, Shield, Edit3,
   Trophy, FileText, CalendarDays, Lock, CheckCircle2,
-  Crown, Star
+  Crown, Star, Save, X
 } from "lucide-react";
 
 const StudentProfile = () => {
@@ -17,10 +21,35 @@ const StudentProfile = () => {
   const { exams, results, timetables } = useAppData();
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const profileStorageKey = useMemo(() => `student-profile-${user?.id || "guest"}`, [user?.id]);
   const [photo, setPhoto] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState(user?.full_name || user?.email?.split("@")[0] || "Student");
   const [savedName, setSavedName] = useState(displayName);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ password: "", confirm: "" });
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(profileStorageKey);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { photo?: string; fullName?: string };
+      if (saved.photo) setPhoto(saved.photo);
+      if (saved.fullName) {
+        setDisplayName(saved.fullName);
+        setSavedName(saved.fullName);
+      }
+    } catch {
+      window.localStorage.removeItem(profileStorageKey);
+    }
+  }, [profileStorageKey]);
+
+  const persistProfile = (next: { photo?: string | null; fullName?: string }) => {
+    const current = { photo, fullName };
+    const updated = { ...current, ...next };
+    window.localStorage.setItem(profileStorageKey, JSON.stringify(updated));
+  };
 
   const fullName = savedName || user?.full_name || user?.email?.split("@")[0] || "Student";
   const studentId = user?.id?.toString().slice(-6).toUpperCase() || "------";
@@ -43,15 +72,67 @@ const StudentProfile = () => {
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPhoto(url);
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file");
+      return;
     }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be under 2 MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || "");
+      setPhoto(dataUrl);
+      persistProfile({ photo: dataUrl });
+      toast.success("Profile photo updated");
+    };
+    reader.onerror = () => toast.error("Could not read image");
+    reader.readAsDataURL(file);
   };
 
   const handleSave = () => {
-    setSavedName(displayName);
+    const trimmed = displayName.trim();
+    if (!trimmed) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+    setSavedName(trimmed);
+    setDisplayName(trimmed);
+    persistProfile({ fullName: trimmed });
     setEditing(false);
+    toast.success("Profile updated");
+  };
+
+  const handlePasswordChange = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (passwordForm.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (passwordForm.password !== passwordForm.confirm) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      await apiClient(`/students/${user?.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ password: passwordForm.password }),
+      });
+      setPasswordForm({ password: "", confirm: "" });
+      setPasswordOpen(false);
+      toast.success("Password changed");
+    } catch (err: any) {
+      toast.error("Could not change password", {
+        description: err.message || "Please try again.",
+      });
+    } finally {
+      setSavingPassword(false);
+    }
   };
 
   const stats = [
@@ -95,6 +176,19 @@ const StudentProfile = () => {
                 >
                   <Camera className="h-3.5 w-3.5" />
                 </button>
+                {photo && (
+                  <button
+                    onClick={() => {
+                      setPhoto(null);
+                      persistProfile({ photo: null });
+                      toast.success("Profile photo removed");
+                    }}
+                    className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white text-destructive border border-border flex items-center justify-center shadow hover:bg-secondary transition-colors"
+                    title="Remove photo"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
                 <input
                   ref={fileRef}
                   type="file"
@@ -249,10 +343,10 @@ const StudentProfile = () => {
                   <div className="flex gap-2 pt-1">
                     <Button
                       onClick={handleSave}
-                      className="text-white text-sm px-5"
-                      style={{ background: "#fe6519" }}
+                      variant="hero"
+                      className="text-sm px-5"
                     >
-                      Save Changes
+                      <Save className="h-4 w-4 mr-1.5" /> Save Changes
                     </Button>
                     <Button
                       variant="outline"
@@ -328,7 +422,7 @@ const StudentProfile = () => {
                   <div className="text-sm font-medium text-foreground">Password</div>
                   <div className="text-xs text-muted-foreground mt-0.5">Change your account password</div>
                 </div>
-                <Button variant="outline" size="sm" className="text-xs">
+                <Button variant="outline" size="sm" className="text-xs" onClick={() => setPasswordOpen(true)}>
                   Change
                 </Button>
               </div>
@@ -346,6 +440,41 @@ const StudentProfile = () => {
           </div>
         </div>
       </div>
+      <Dialog open={passwordOpen} onOpenChange={setPasswordOpen}>
+        <DialogContent className="max-w-md">
+          <form onSubmit={handlePasswordChange}>
+            <DialogHeader>
+              <DialogTitle>Change Password</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label>New password</Label>
+                <Input
+                  type="password"
+                  value={passwordForm.password}
+                  onChange={(event) => setPasswordForm((prev) => ({ ...prev, password: event.target.value }))}
+                  minLength={6}
+                  required
+                />
+              </div>
+              <div>
+                <Label>Confirm password</Label>
+                <Input
+                  type="password"
+                  value={passwordForm.confirm}
+                  onChange={(event) => setPasswordForm((prev) => ({ ...prev, confirm: event.target.value }))}
+                  minLength={6}
+                  required
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPasswordOpen(false)}>Cancel</Button>
+              <Button type="submit" variant="hero" disabled={savingPassword}>Update Password</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

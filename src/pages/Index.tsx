@@ -9,19 +9,15 @@ const StudentLogin = () => {
 
   useEffect(() => {
     if (loading) return;
-    if (user && role === "student") navigate("/dashboard", { replace: true });
-    if (user && role === "teacher") navigate("/teacher/dashboard", { replace: true });
-    if (user && role === "admin") navigate("/admin/dashboard", { replace: true });
+    if (user) {
+      if (role === "student") navigate("/dashboard", { replace: true });
+      else if (role === "teacher") navigate("/teacher/dashboard", { replace: true });
+      else if (role === "admin") navigate("/admin/dashboard", { replace: true });
+      else if (role === "parent") navigate("/parent/dashboard", { replace: true });
+    }
   }, [user, role, loading, navigate]);
 
-  return (
-    <LoginShell
-      role="student"
-      title="Welcome back"
-      subtitle="Sign in to continue your learning journey"
-      redirectPath="/dashboard"
-    />
-  );
+  return <LoginShell />;
 };
 
 export default StudentLogin;

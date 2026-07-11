@@ -1,7 +1,16 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
-import { GraduationCap } from "lucide-react";
+import {
+  GraduationCap,
+  BookOpen,
+  Users,
+  Shield,
+  User,
+  Lock,
+  ArrowRight,
+  Sparkles
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,23 +20,32 @@ import { useAuth } from "@/hooks/useAuth";
 
 const schema = z.object({
   identifier: z.string().trim().min(3, "At least 3 characters").max(255),
-  password: z.string().min(6, "At least 6 characters").max(72),
+  password: z.string().min(5, "At least 5 characters").max(72),
 });
 
-interface Props {
-  role: "student" | "teacher" | "admin";
-  title: string;
-  subtitle: string;
-  redirectPath: string;
-  showBackToStudent?: boolean;
-}
+type LoginRole = "student" | "teacher" | "parent" | "admin";
 
-export const LoginShell = ({ role, title, subtitle, redirectPath, showBackToStudent }: Props) => {
+export const LoginShell = () => {
   const navigate = useNavigate();
   const { signIn } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get active role from search parameters, default to student
+  const activeRole = (searchParams.get("role") || "student") as LoginRole;
+  
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Clear fields when role changes
+  useEffect(() => {
+    setIdentifier("");
+    setPassword("");
+  }, [activeRole]);
+
+  const handleRoleChange = (role: LoginRole) => {
+    setSearchParams({ role });
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,9 +57,23 @@ export const LoginShell = ({ role, title, subtitle, redirectPath, showBackToStud
 
     setIsLoggingIn(true);
     try {
-      await signIn(role, identifier, password);
-      toast.success("Login successful");
-      navigate(redirectPath, { replace: true });
+      await signIn(activeRole, identifier, password);
+      
+      if (activeRole === "parent") {
+        toast.success("Signed in successfully as Parent");
+        navigate("/parent/dashboard", { replace: true });
+      } else {
+        toast.success("Login successful");
+        const redirectPath =
+          activeRole === "student"
+            ? "/dashboard"
+            : activeRole === "teacher"
+            ? "/teacher/dashboard"
+            : activeRole === "parent"
+            ? "/parent/dashboard"
+            : "/admin/dashboard";
+        navigate(redirectPath, { replace: true });
+      }
     } catch (error: any) {
       toast.error(error.message || "Failed to log in");
     } finally {
@@ -49,110 +81,252 @@ export const LoginShell = ({ role, title, subtitle, redirectPath, showBackToStud
     }
   };
 
+  // Content for role selection cards
+  const roleCards = [
+    {
+      id: "student" as LoginRole,
+      title: "Students",
+      description: "Access assignments & track progress",
+      icon: GraduationCap,
+    },
+    {
+      id: "teacher" as LoginRole,
+      title: "Teachers",
+      description: "Manage classes & provide feedback",
+      icon: BookOpen,
+    },
+    {
+      id: "parent" as LoginRole,
+      title: "Parents",
+      description: "Monitor child's academic progress",
+      icon: Users,
+    },
+    {
+      id: "admin" as LoginRole,
+      title: "Admin",
+      description: "Oversee system & analytics",
+      icon: Shield,
+    }
+  ];
+
+  // Config per role for the login card
+  const roleConfig = {
+    student: {
+      badgeText: "Student Portal",
+      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-orange-200/50",
+      title: "Student Sign In",
+      subtitle: "Sign in to continue your learning journey",
+      idLabel: "Student ID",
+      idPlaceholder: "e.g. student123",
+      footerHint: "Don't have an account? Ask your institute admin to create one."
+    },
+    teacher: {
+      badgeText: "Teacher Portal",
+      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-orange-200/50",
+      title: "Teacher Sign In",
+      subtitle: "Access your classes, exams and students",
+      idLabel: "Email / Username",
+      idPlaceholder: "e.g. teacher@school.com",
+      footerHint: "💡 Use the username or email address set by your admin."
+    },
+    parent: {
+      badgeText: "Parent Access",
+      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-orange-200/50",
+      title: "Parent Sign In",
+      subtitle: "Monitor your child's academic progress",
+      idLabel: "Student ID / Parent Username",
+      idPlaceholder: "e.g. student123 or parent@example.com",
+      footerHint: "Use the linked student's ID with the parent password, or use the parent username."
+    },
+    admin: {
+      badgeText: "Admin Control",
+      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-orange-200/50",
+      title: "Admin Sign In",
+      subtitle: "Oversee system and platform settings",
+      idLabel: "Admin Username",
+      idPlaceholder: "e.g. admin",
+      footerHint: "System administration credentials required."
+    }
+  };
+
+  const currentConfig = roleConfig[activeRole] || roleConfig.student;
+
   return (
-    <div className="min-h-screen flex bg-gradient-soft">
-      {/* Left: branding */}
-      <div className="hidden lg:flex flex-1 relative overflow-hidden bg-gradient-primary p-12 flex-col justify-between text-primary-foreground">
-        <div className="flex items-center gap-2.5">
-          <img src="/logo.svg" alt="Crafted" className="h-16 w-auto max-w-[200px] object-contain bg-white rounded-2xl shadow-elevated p-3 pl-4 pr-4" />
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-950 text-white overflow-hidden relative font-sans">
+      {/* Left: Branding & Selection */}
+      <div className="w-full lg:w-[58%] p-8 sm:p-12 lg:p-16 flex flex-col justify-between relative bg-gradient-primary z-10">
+        {/* Decorative bright ambient background glows */}
+        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-yellow-300/10 rounded-full blur-[100px] pointer-events-none" />
+
+        {/* Top: Logo */}
+        <div className="flex items-center gap-2.5 mb-8 lg:mb-0">
+          <img 
+            src="/logo.svg" 
+            alt="Crafted" 
+            className="h-16 w-auto max-w-[200px] object-contain bg-white rounded-2xl shadow-elevated p-3 pl-4 pr-4 transition-all duration-300 hover:scale-105" 
+          />
         </div>
-        <div className="space-y-6 max-w-md">
-          <h1 className="font-display text-5xl font-bold leading-[1.05] text-balance">
-            Learn smarter. Grow faster.
-          </h1>
-          <p className="text-lg text-primary-foreground/90 leading-relaxed">
-            One platform for live classes, recorded sessions, online exams and progress tracking — built for serious learners.
-          </p>
-          <div className="grid grid-cols-3 gap-4 pt-4">
-            {[
-              { k: "10k+", v: "Students" },
-              { k: "500+", v: "Courses" },
-              { k: "98%", v: "Pass rate" },
-            ].map((s) => (
-              <div key={s.v} className="bg-white/10 backdrop-blur rounded-xl p-4">
-                <div className="font-display text-2xl font-bold">{s.k}</div>
-                <div className="text-xs text-primary-foreground/80 mt-0.5">{s.v}</div>
-              </div>
-            ))}
+
+        {/* Center Content */}
+        <div className="space-y-8 my-auto max-w-2xl py-6 lg:py-0">
+          <div className="space-y-4">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] text-balance">
+              Welcome to{" "}
+              <span className="block mt-3 lg:inline-block">
+                <span className="inline-flex bg-white px-5 py-2 rounded-2xl shadow-elevated border border-orange-100 hover:rotate-1 transition-transform duration-200">
+                  <span className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider bg-gradient-to-r from-primary to-orange-600 bg-clip-text text-transparent">
+                    CRAFTED
+                  </span>
+                </span>
+              </span>
+            </h1>
+            <p className="text-white text-base sm:text-lg leading-relaxed max-w-xl font-medium">
+              Empowering education through innovative learning management. Connect students, teachers, and administrators in one powerful platform.
+            </p>
+          </div>
+
+          {/* Role selection card grid */}
+          <div className="space-y-4 pt-4">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/90">
+              <Sparkles className="h-4 w-4 text-white animate-pulse" />
+              <span>Select Your Role</span>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {roleCards.map((rc) => {
+                const IconComponent = rc.icon;
+                const isSelected = activeRole === rc.id;
+                return (
+                  <div
+                    key={rc.id}
+                    onClick={() => handleRoleChange(rc.id)}
+                    className={`relative rounded-2xl p-5 cursor-pointer border transition-all duration-300 flex flex-col items-center lg:items-start text-center lg:text-left gap-3 group ${
+                      isSelected
+                        ? "bg-white/20 border-white shadow-[0_10px_30px_rgba(0,0,0,0.15)] ring-4 ring-white/10 scale-[1.03]"
+                        : "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 hover:scale-[1.01]"
+                    }`}
+                  >
+                    {/* Active selection dot */}
+                    {isSelected && (
+                      <span className="absolute top-3 right-3 flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                      </span>
+                    )}
+
+                    <div className={`p-3 rounded-xl transition-all duration-300 ${
+                      isSelected 
+                        ? "bg-white text-primary shadow-sm" 
+                        : "bg-white/10 text-white group-hover:bg-white/20"
+                    }`}>
+                      <IconComponent className="h-6 w-6" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="font-bold text-sm text-white">
+                        {rc.title}
+                      </div>
+                      <div className="text-xs text-white/80 leading-normal line-clamp-2">
+                        {rc.description}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
-        <div className="text-sm text-primary-foreground/70">
+
+        {/* Footer */}
+        <div className="text-sm text-white/70 mt-8 lg:mt-0 font-medium">
           © {new Date().getFullYear()} Crafted. All rights reserved.
         </div>
-        {/* decorative */}
-        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
       </div>
 
-      {/* Right: form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+      {/* Right: Form Panel */}
+      <div className="w-full lg:w-[42%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-slate-50 dark:bg-slate-950 border-t lg:border-t-0 lg:border-l border-slate-200/50 dark:border-slate-800/50 relative z-10">
         <div className="w-full max-w-md animate-fade-in">
-          <div className="lg:hidden flex items-center mt-2 mb-8 justify-center">
-            <img src="/logo.svg" alt="Crafted" className="max-h-12 w-auto object-contain" />
-          </div>
+          {/* Card */}
+          <Card className="p-8 sm:p-10 shadow-card border-slate-100 dark:border-slate-800/50 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl relative overflow-hidden">
+            {/* Background design accents */}
+            <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/5 blur-xl pointer-events-none" />
+            <div className="absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-primary/5 blur-xl pointer-events-none" />
 
-          <Card className="p-8 shadow-card border-border/60">
-            <div className="mb-6">
-              <div className="inline-flex items-center gap-2 text-xs font-medium px-2.5 py-1 rounded-full bg-primary-soft text-primary mb-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                {role === "student" ? "Student portal" : role === "teacher" ? "Teacher portal" : "Admin portal"}
+            <div className="mb-8">
+              <div className={`inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border ${currentConfig.badgeColor} mb-4`}>
+                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+                {currentConfig.badgeText}
               </div>
-              <h2 className="font-display text-2xl font-bold">{title}</h2>
-              <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
-
+              <h2 className="font-display text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{currentConfig.title}</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">{currentConfig.subtitle}</p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="identifier">
-                  {role === "student" ? "Student ID" : role === "teacher" ? "Email / Username" : "Admin Username"}
+                <Label htmlFor="identifier" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  {currentConfig.idLabel}
                 </Label>
-                <Input
-                  id="identifier"
-                  type="text"
-                  placeholder={
-                    role === "student" ? "e.g. STU123"
-                    : role === "teacher" ? "e.g. teacher@school.com"
-                    : "e.g. admin"
-                  }
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  autoComplete="username"
-                  required
-                />
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
+                  <Input
+                    id="identifier"
+                    type="text"
+                    placeholder={currentConfig.idPlaceholder}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    autoComplete="username"
+                    required
+                    className="pl-11 h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium transition-smooth"
+                  />
+                </div>
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Password
+                  </Label>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                    className="pl-11 h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium transition-smooth"
+                  />
+                </div>
               </div>
-              <Button type="submit" variant="hero" size="lg" className="w-full" disabled={isLoggingIn}>
-                {isLoggingIn ? "Signing in..." : "Sign in"}
+
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full h-12 mt-2 bg-primary hover:bg-primary-hover text-white font-semibold rounded-xl shadow-elevated hover:shadow-glow hover:-translate-y-0.5 transition-smooth border-none outline-none"
+                disabled={isLoggingIn}
+              >
+                {isLoggingIn ? (
+                  <span className="flex items-center gap-2 justify-center">
+                    <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Signing in...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2 justify-center">
+                    Sign in <ArrowRight className="h-4 w-4" />
+                  </span>
+                )}
               </Button>
             </form>
 
-            {role === "student" && (
-              <p className="text-xs text-muted-foreground text-center mt-6">
-                Don't have an account? Ask your institute admin to create one.
+            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center gap-2.5">
+              <p className="text-xs text-slate-400 dark:text-slate-500 text-center font-medium leading-relaxed max-w-[280px]">
+                {currentConfig.footerHint}
               </p>
-            )}
-            {role === "teacher" && (
-              <p className="text-xs text-muted-foreground text-center mt-4">
-                💡 Use the <span className="font-semibold text-foreground">email address</span> set by your admin as your username.
-              </p>
-            )}
-            {showBackToStudent && (
-              <p className="text-xs text-muted-foreground text-center mt-4">
-                <Link to="/" className="text-primary hover:underline font-medium">← Back to student login</Link>
-              </p>
-            )}
+            </div>
           </Card>
         </div>
       </div>

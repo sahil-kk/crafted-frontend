@@ -1,13 +1,7 @@
-import { LoginShell } from "@/components/auth/LoginShell";
+import { Navigate } from "react-router-dom";
 
-const AdminLogin = () => (
-  <LoginShell
-    role="admin"
-    title="Admin sign in"
-    subtitle="Manage students, teachers and the platform"
-    redirectPath="/admin/dashboard"
-    showBackToStudent
-  />
-);
+const AdminLogin = () => {
+  return <Navigate to="/?role=admin" replace />;
+};
 
 export default AdminLogin;

@@ -25,6 +25,7 @@ export const RoleRoute = ({ children, allow, fallback = "/" }: Props) => {
     // route to their own area
     if (role === "admin") return <Navigate to="/admin/dashboard" replace />;
     if (role === "teacher") return <Navigate to="/teacher/dashboard" replace />;
+    if (role === "parent") return <Navigate to="/parent/dashboard" replace />;
     return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;

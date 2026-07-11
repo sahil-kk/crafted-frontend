@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   GraduationCap, Home, Newspaper, BookOpen, FileText, BarChart3,
   Bell, LogOut, Menu, Users, Megaphone, Settings, ClipboardList, Calendar,
-  UserCircle, Video, CreditCard, TrendingUp
+  UserCircle, Video, CreditCard, TrendingUp, ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -43,6 +43,7 @@ const navByRole: Record<AppRole, NavItem[]> = {
     { title: "Dashboard", url: "/admin/dashboard", icon: Home },
     { title: "Timetable", url: "/admin/timetable", icon: Calendar },
     { title: "Students", url: "/admin/students", icon: Users },
+    { title: "Parents", url: "/admin/parents", icon: ShieldCheck },
     { title: "Teachers", url: "/admin/teachers", icon: GraduationCap },
     { title: "Payments", url: "/admin/payments", icon: CreditCard },
     { title: "Growth Meter", url: "/admin/growth-meter", icon: TrendingUp },
@@ -50,6 +51,14 @@ const navByRole: Record<AppRole, NavItem[]> = {
     { title: "Exams", url: "/admin/exams", icon: ClipboardList },
     { title: "Results", url: "/admin/results", icon: BarChart3 },
     { title: "Settings", url: "/admin/settings", icon: Settings },
+  ],
+  parent: [
+    { title: "Dashboard", url: "/parent/dashboard", icon: Home },
+    { title: "Profile", url: "/parent/profile", icon: UserCircle },
+    { title: "Results", url: "/parent/results", icon: BarChart3 },
+    { title: "Growth Meter", url: "/parent/growth", icon: TrendingUp },
+    { title: "Exams", url: "/parent/exams", icon: ClipboardList },
+    { title: "Teachers", url: "/parent/teachers", icon: GraduationCap },
   ],
 };
 
@@ -70,7 +79,7 @@ const AppSidebar = ({ role }: { role: AppRole }) => {
             collapsed ? "justify-center px-2 py-4" : "px-5 py-4"
           )}
           style={{ borderBottomColor: "#fe651930" }}
-          onClick={() => navigate(role === "student" ? "/dashboard" : role === "teacher" ? "/teacher/dashboard" : "/admin/dashboard")}
+          onClick={() => navigate(role === "student" ? "/dashboard" : role === "teacher" ? "/teacher/dashboard" : role === "parent" ? "/parent/dashboard" : "/admin/dashboard")}
         >
           {collapsed ? (
             <img src="/favicon.ico" alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
@@ -211,6 +220,7 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
     await signOut();
     if (role === "admin") navigate("/admin");
     else if (role === "teacher") navigate("/teacher");
+    else if (role === "parent") navigate("/?role=parent");
     else navigate("/");
   };
 
@@ -222,6 +232,8 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
     ? "/dashboard/news"
     : role === "teacher"
     ? "/teacher/announcements"
+    : role === "parent"
+    ? "/parent/dashboard"
     : "/admin/announcements";
 
   // Derive title from path if not given
@@ -242,7 +254,7 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
               {/* Mobile logo */}
               <button
                 className="md:hidden"
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate(role === "student" ? "/dashboard" : role === "teacher" ? "/teacher/dashboard" : role === "parent" ? "/parent/dashboard" : "/admin/dashboard")}
               >
                 <img src="/favicon.ico" alt="Logo" className="w-8 h-8 object-contain rounded-lg" />
               </button>

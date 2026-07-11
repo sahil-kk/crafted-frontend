@@ -2,10 +2,9 @@ import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
-  Video, Search, PlayCircle, FileText, BookOpen,
-  Crown, ChevronDown, Layers, ClipboardList, Presentation
+  Video, Search, PlayCircle, BookOpen,
+  Crown, ChevronDown, ClipboardList, Presentation
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAppData } from "@/hooks/useAppData";
@@ -190,61 +189,28 @@ const StudentCourses = () => {
 
       {/* ── SLIDES TAB ── */}
       {activeTab === "slides" && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {SUBJECTS.filter(s => s !== "All").map((subj) => (
-            <Card key={subj} className="p-5 shadow-card border-border/60 hover:shadow-elevated transition-smooth cursor-pointer group">
-              <div className="flex items-start gap-3 mb-3">
-                <div
-                  className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: "#fe651918" }}
-                >
-                  <Presentation className="h-5 w-5" style={{ color: "#fe6519" }} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-foreground">{subj} Slides</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Chapter-wise presentations</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-[10px]">PDF</Badge>
-                <Badge variant="secondary" className="text-[10px]">PPT</Badge>
-              </div>
-              <div className="mt-4 pt-3 border-t border-border/50 text-xs text-muted-foreground flex items-center gap-1.5">
-                <Layers className="h-3.5 w-3.5" />
-                Slides will be uploaded by your teacher
-              </div>
-            </Card>
-          ))}
-        </div>
+        <Card className="p-12 text-center shadow-card border-border/60">
+          <div className="h-14 w-14 rounded-2xl bg-primary-soft flex items-center justify-center mx-auto mb-4">
+            <Presentation className="h-6 w-6 text-primary" />
+          </div>
+          <h3 className="font-display font-semibold text-lg">No slides published yet</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Uploaded slide files will appear here when your teacher publishes them.
+          </p>
+        </Card>
       )}
 
       {/* ── ASSIGNMENTS TAB ── */}
       {activeTab === "assignments" && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {SUBJECTS.filter(s => s !== "All").map((subj, idx) => (
-            <Card key={subj} className="p-5 shadow-card border-border/60 hover:shadow-elevated transition-smooth cursor-pointer group">
-              <div className="flex items-start gap-3 mb-3">
-                <div
-                  className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: idx % 2 === 0 ? "#6366f118" : "#10b98118" }}
-                >
-                  <ClipboardList className="h-5 w-5" style={{ color: idx % 2 === 0 ? "#6366f1" : "#10b981" }} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-foreground">{subj} Assignments</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Practice worksheets &amp; tasks</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-[10px]">Pending</Badge>
-              </div>
-              <div className="mt-4 pt-3 border-t border-border/50 text-xs text-muted-foreground flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5" />
-                Assignments will be posted by your teacher
-              </div>
-            </Card>
-          ))}
-        </div>
+        <Card className="p-12 text-center shadow-card border-border/60">
+          <div className="h-14 w-14 rounded-2xl bg-primary-soft flex items-center justify-center mx-auto mb-4">
+            <ClipboardList className="h-6 w-6 text-primary" />
+          </div>
+          <h3 className="font-display font-semibold text-lg">No assignments published yet</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Active worksheets and tasks will appear here when teachers publish them.
+          </p>
+        </Card>
       )}
 
       {/* Video Player Dialog */}

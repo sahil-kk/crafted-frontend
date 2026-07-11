@@ -59,6 +59,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           method: "POST",
           body: JSON.stringify({ studentId: identifier, password: pass }),
         });
+      } else if (nextRole === "parent") {
+        data = await apiClient<{ token: string; role: string; parent: any; student: any }>("/auth/parent-login", {
+          method: "POST",
+          body: JSON.stringify({ username: identifier, password: pass }),
+        });
       } else if (nextRole === "teacher") {
         data = await apiClient<{ token: string; role: string }>("/auth/teacher-login", {
           method: "POST",
@@ -86,6 +91,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: "student",
         full_name: data.student.name || identifier,
         created_at: new Date().toISOString(),
+      };
+    } else if (nextRole === "parent" && data.parent) {
+      nextUser = {
+        id: data.parent.id || identifier,
+        email: data.parent.email || `${identifier}@parent.com`,
+        role: "parent",
+        full_name: data.parent.name || identifier,
+        created_at: new Date().toISOString(),
+        phone: data.parent.phone || "",
+        linkedStudentId: data.student?.id || data.parent.linkedStudentId,
       };
     } else {
       // Decode JWT for ID if not provided explicitly in payload (since admin routes return just token)

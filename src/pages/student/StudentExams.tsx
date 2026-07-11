@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   FileText, Clock, Calendar, CheckCircle2,
-  ClipboardList, Dumbbell, BookOpen, ChevronRight,
+  ClipboardList, Dumbbell, BookOpen,
   AlertCircle
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { format, isFuture, isPast } from "date-fns";
+import { format, isFuture } from "date-fns";
 import { useAppData } from "@/hooks/useAppData";
 
 type ExamTab = "unit_test" | "practice" | "worksheet";
@@ -42,7 +42,7 @@ const TAB_CONFIG: { key: ExamTab; label: string; icon: any; color: string; descr
 const StudentExams = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { exams, attempts } = useAppData();
+  const { exams, attempts, questions } = useAppData();
   const [activeTab, setActiveTab] = useState<ExamTab>("unit_test");
 
   const attemptedIds = new Set(
@@ -125,6 +125,7 @@ const StudentExams = () => {
           {tabRows.map((exam) => {
             const attempted = attemptedIds.has(exam.id);
             const upcoming = exam.starts_at ? isFuture(new Date(exam.starts_at)) : false;
+            const questionCount = questions.filter((question) => question.exam_id === exam.id).length;
 
             return (
               <Card
@@ -181,6 +182,16 @@ const StudentExams = () => {
                 </div>
 
                 <div className="mt-4 space-y-2">
+                  {questionCount > 0 && (
+                    <Button
+                      variant="hero"
+                      className="w-full text-sm gap-2"
+                      onClick={() => navigate(`/dashboard/exams/${exam.id}`)}
+                    >
+                      <ClipboardList className="h-4 w-4" />
+                      {attempted ? "Review / Retake Exam" : "Start Exam"}
+                    </Button>
+                  )}
                   {exam.pdf && (
                     <Button
                       variant="outline"
@@ -195,6 +206,11 @@ const StudentExams = () => {
                       <FileText className="h-4 w-4" style={{ color: "#fe6519" }} />
                       View Question Paper (PDF)
                     </Button>
+                  )}
+                  {!exam.pdf && questionCount === 0 && (
+                    <div className="rounded-xl bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
+                      Questions are not published yet.
+                    </div>
                   )}
                 </div>
               </Card>

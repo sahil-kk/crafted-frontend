@@ -1,7 +1,8 @@
-export type AppRole = "admin" | "teacher" | "student";
+export type AppRole = "admin" | "teacher" | "student" | "parent";
 
 export interface MockUser {
   id: string;
+  studentId?: string;
   email: string;
   role: AppRole;
   full_name: string;
@@ -10,6 +11,8 @@ export interface MockUser {
   batch?: string;
   phone?: string;
   subject?: string;
+  linkedStudentId?: string;
+  relationship?: string;
 }
 
 export interface Course {

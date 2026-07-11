@@ -26,6 +26,9 @@ interface CreateUserInput {
   batch?: string;
   phone?: string;
   subject?: string;
+  linkedStudentId?: string;
+  relationship?: string;
+  password?: string;
 }
 
 interface UpdateUserInput {
@@ -38,6 +41,8 @@ interface UpdateUserInput {
   batch?: string;
   phone?: string;
   subject?: string;
+  linkedStudentId?: string;
+  relationship?: string;
 }
 
 interface CreateCourseInput {
@@ -84,9 +89,9 @@ interface SubmitExamInput {
 }
 
 interface AppDataContextValue extends MockAppState {
-  createUser: (input: CreateUserInput) => void;
-  deleteUser: (id: string, role?: string) => void;
-  updateUser: (input: UpdateUserInput) => void;
+  createUser: (input: CreateUserInput) => Promise<void>;
+  deleteUser: (id: string, role?: string) => Promise<void>;
+  updateUser: (input: UpdateUserInput) => Promise<void>;
   createCourse: (input: CreateCourseInput) => void;
   deleteCourse: (id: string) => void;
   updateCourse: (id: string, input: Partial<CreateCourseInput>) => void;
@@ -143,9 +148,10 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     // Fetch initial state from backend
     const fetchAll = async () => {
       try {
-        const [students, teachers, courses, announcements, exams, classes, results, timetables, loadedPayments] = await Promise.all([
+        const [students, teachers, parents, courses, announcements, exams, classes, results, timetables, loadedPayments] = await Promise.all([
           apiClient<any[]>("/students").catch(() => []),
           apiClient<any[]>("/admin/teachers").catch(() => []),
+          apiClient<any[]>("/parents").catch(() => []),
           apiClient<any[]>("/courses").catch(() => []),
           apiClient<any[]>("/announcements").catch(() => []),
           apiClient<any[]>("/exams").catch(() => []),
@@ -174,6 +180,16 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             created_at: u.createdAt || new Date().toISOString(),
             phone: u.phone || "",
             subject: u.subject || "Physics"
+          })),
+          ...(parents || []).map((u: any) => ({
+            id: u._id || u.id,
+            email: u.email,
+            full_name: u.name,
+            role: "parent" as const,
+            created_at: u.createdAt || new Date().toISOString(),
+            phone: u.phone || "",
+            linkedStudentId: u.student?._id || u.student?.id || u.student,
+            relationship: u.relationship || "Parent"
           }))
         ];
 
@@ -242,8 +258,8 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     ...state,
     createUser: async (input) => {
       try {
-        const password = "password123"; // default fallback for local mock
-        let endpoint = input.role === "teacher" ? "/admin/teachers" : "/students";
+        const password = input.password || "password123"; // default fallback for local mock
+        let endpoint = input.role === "teacher" ? "/admin/teachers" : input.role === "parent" ? "/parents" : "/students";
         let body: any = { password, email: input.email, name: input.full_name };
         if (input.role === "student") {
           body.studentId = input.email.split('@')[0];
@@ -254,9 +270,15 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           body.phone = input.phone || "";
           body.subject = input.subject || "Physics";
         }
+        if (input.role === "parent") {
+          body.username = input.email;
+          body.phone = input.phone || "";
+          body.studentId = input.linkedStudentId;
+          body.relationship = input.relationship || "Parent";
+        }
         const res = await apiClient<any>(endpoint, { method: "POST", body: JSON.stringify(body) });
         
-        const actualId = (res.student?._id || res.teacher?._id || res._id) || createId("user");
+        const actualId = (res.student?._id || res.teacher?._id || res._id || res.id) || createId("user");
         
         setState((prev) => ({
           ...prev,
@@ -271,21 +293,24 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
               batch: input.batch || (input.role === "student" ? "Batch 1" : undefined),
               phone: input.phone || "",
               subject: input.subject || (input.role === "teacher" ? "Physics" : undefined),
+              linkedStudentId: input.linkedStudentId,
+              relationship: input.relationship,
             },
             ...prev.users,
           ],
         }));
       } catch (err) {
         console.error(err);
+        throw err;
       }
     },
     deleteUser: async (id, role: any) => {
       try {
         if (role) {
-           let endpoint = role === "teacher" ? `/admin/teachers/${id}` : `/students/${id}`;
+           let endpoint = role === "teacher" ? `/admin/teachers/${id}` : role === "parent" ? `/parents/${id}` : `/students/${id}`;
            await apiClient(endpoint, { method: "DELETE" }).catch(console.error);
         }
-      } catch (e) {}
+      } catch (e) { throw e; }
       setState((prev) => ({
         ...prev,
         users: prev.users.filter((user) => user.id !== id),
@@ -294,7 +319,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     },
     updateUser: async (input) => {
       try {
-        let endpoint = input.role === "teacher" ? `/admin/teachers/${input.id}` : `/students/${input.id}`;
+        let endpoint = input.role === "teacher" ? `/admin/teachers/${input.id}` : input.role === "parent" ? `/parents/${input.id}` : `/students/${input.id}`;
         let body: any = {};
         if (input.email !== undefined) body.email = input.email;
         if (input.full_name !== undefined) body.name = input.full_name;
@@ -303,6 +328,9 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         if (input.course !== undefined) body.course = input.course;
         if (input.batch !== undefined) body.batch = input.batch;
         if (input.subject !== undefined) body.subject = input.subject;
+        if (input.linkedStudentId !== undefined) body.studentId = input.linkedStudentId;
+        if (input.relationship !== undefined) body.relationship = input.relationship;
+        if (input.role === "parent") body.username = input.email;
         
         await apiClient<any>(endpoint, { method: "PATCH", body: JSON.stringify(body) });
         
@@ -316,10 +344,13 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
               course: input.course !== undefined ? input.course : u.course,
               batch: input.batch !== undefined ? input.batch : u.batch,
               subject: input.subject !== undefined ? input.subject : u.subject,
+              linkedStudentId: input.linkedStudentId !== undefined ? input.linkedStudentId : u.linkedStudentId,
+              relationship: input.relationship !== undefined ? input.relationship : u.relationship,
             } : u)
         }));
       } catch (err) {
         console.error(err);
+        throw err;
       }
     },
     createCourse: async (input) => {

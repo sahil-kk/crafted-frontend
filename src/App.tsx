@@ -20,6 +20,7 @@ import TakeExam from "./pages/student/TakeExam";
 import StudentProfile from "./pages/student/StudentProfile";
 
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import ParentDashboard from "./pages/parent/ParentDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -73,9 +74,18 @@ const App = () => (
             <Route path="/teacher/results" element={<RoleRoute allow={["teacher"]} fallback="/teacher"><ResultsManager viewerRole="teacher" /></RoleRoute>} />
             <Route path="/teacher/timetable" element={<RoleRoute allow={["teacher"]} fallback="/teacher"><TimetableManager viewerRole="teacher" /></RoleRoute>} />
 
+            {/* Parent */}
+            <Route path="/parent/dashboard" element={<RoleRoute allow={["parent"]} fallback="/?role=parent"><ParentDashboard /></RoleRoute>} />
+            <Route path="/parent/profile" element={<RoleRoute allow={["parent"]} fallback="/?role=parent"><ParentDashboard /></RoleRoute>} />
+            <Route path="/parent/results" element={<RoleRoute allow={["parent"]} fallback="/?role=parent"><ParentDashboard /></RoleRoute>} />
+            <Route path="/parent/growth" element={<RoleRoute allow={["parent"]} fallback="/?role=parent"><ParentDashboard /></RoleRoute>} />
+            <Route path="/parent/exams" element={<RoleRoute allow={["parent"]} fallback="/?role=parent"><ParentDashboard /></RoleRoute>} />
+            <Route path="/parent/teachers" element={<RoleRoute allow={["parent"]} fallback="/?role=parent"><ParentDashboard /></RoleRoute>} />
+
             {/* Admin */}
             <Route path="/admin/dashboard" element={<RoleRoute allow={["admin"]} fallback="/admin"><AdminDashboard /></RoleRoute>} />
             <Route path="/admin/students" element={<RoleRoute allow={["admin"]} fallback="/admin"><ManageUsersPage role="student" viewerRole="admin" title="Students" description="Manage all students on the platform" /></RoleRoute>} />
+            <Route path="/admin/parents" element={<RoleRoute allow={["admin"]} fallback="/admin"><ManageUsersPage role="parent" viewerRole="admin" title="Parents" description="Create parent portal accounts linked to students" /></RoleRoute>} />
             <Route path="/admin/teachers" element={<RoleRoute allow={["admin"]} fallback="/admin"><ManageUsersPage role="teacher" viewerRole="admin" title="Teachers" description="Manage all teachers on the platform" /></RoleRoute>} />
             <Route path="/admin/courses" element={<RoleRoute allow={["admin"]} fallback="/admin"><AdminCourses /></RoleRoute>} />
             <Route path="/admin/exams" element={<RoleRoute allow={["admin"]} fallback="/admin"><ExamsManager viewerRole="admin" /></RoleRoute>} />

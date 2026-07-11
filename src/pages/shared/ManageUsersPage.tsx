@@ -14,7 +14,7 @@ import { useAppData } from "@/hooks/useAppData";
 import { format } from "date-fns";
 
 interface Props {
-  role: "student" | "teacher";
+  role: "student" | "teacher" | "parent";
   viewerRole: AppRole;
   title: string;
   description: string;
@@ -44,7 +44,9 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
     course: "10th", 
     batch: "Batch 1", 
     phone: "", 
-    subject: "Physics" 
+    subject: "Physics",
+    linkedStudentId: "",
+    relationship: "Parent"
   });
   
   const [editForm, setEditForm] = useState({ 
@@ -53,10 +55,14 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
     full_name: "", 
     password: "", 
     course: "10th", 
-    batch: "Batch 1", 
-    phone: "", 
-    subject: "Physics" 
+    batch: "Batch 1",
+    phone: "",
+    subject: "Physics",
+    linkedStudentId: "",
+    relationship: "Parent"
   });
+
+  const students = users.filter((user) => user.role === "student");
 
   const rows = useMemo(() => {
     return users
@@ -85,48 +91,67 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
   }, [query, role, users, selectedClass, selectedSubject]);
 
-  const onCreate = (e: React.FormEvent) => {
+  const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    createUser({ 
-      email: form.email, 
-      full_name: form.full_name, 
-      role,
-      course: role === "student" ? form.course : undefined,
-      batch: role === "student" ? form.batch : undefined,
-      phone: form.phone,
-      subject: role === "teacher" ? form.subject : undefined
-    });
-    toast.success(`${role} scheduled for creation in DB`, {
-      description: `${form.email} / ${form.password}`,
-      duration: 10000,
-    });
-    setOpen(false);
-    setForm({ 
-      email: "", 
-      full_name: "", 
-      password: randomPassword(), 
-      course: "10th", 
-      batch: "Batch 1", 
-      phone: "", 
-      subject: "Physics" 
-    });
+    try {
+      await createUser({ 
+        email: form.email, 
+        full_name: form.full_name, 
+        role,
+        password: form.password,
+        course: role === "student" ? form.course : undefined,
+        batch: role === "student" ? form.batch : undefined,
+        phone: form.phone,
+        subject: role === "teacher" ? form.subject : undefined,
+        linkedStudentId: role === "parent" ? form.linkedStudentId : undefined,
+        relationship: role === "parent" ? form.relationship : undefined,
+      });
+      toast.success(`${role} created`, {
+        description: `${form.email} / ${form.password}`,
+        duration: 10000,
+      });
+      setOpen(false);
+      setForm({ 
+        email: "", 
+        full_name: "", 
+        password: randomPassword(), 
+        course: "10th", 
+        batch: "Batch 1", 
+        phone: "", 
+        subject: "Physics",
+        linkedStudentId: "",
+        relationship: "Parent"
+      });
+    } catch (err: any) {
+      toast.error(`Failed to create ${role}`, {
+        description: err.message || "Please check the backend deployment and try again.",
+      });
+    }
   };
 
-  const onEdit = (e: React.FormEvent) => {
+  const onEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateUser({ 
-      id: editForm.id, 
-      email: editForm.email, 
-      full_name: editForm.full_name, 
-      role,
-      course: role === "student" ? editForm.course : undefined,
-      batch: role === "student" ? editForm.batch : undefined,
-      phone: editForm.phone,
-      subject: role === "teacher" ? editForm.subject : undefined,
-      ...(editForm.password ? { password: editForm.password } : {})
-    });
-    toast.success(`${role} scheduled for update in DB`);
-    setEditOpen(false);
+    try {
+      await updateUser({ 
+        id: editForm.id, 
+        email: editForm.email, 
+        full_name: editForm.full_name, 
+        role,
+        course: role === "student" ? editForm.course : undefined,
+        batch: role === "student" ? editForm.batch : undefined,
+        phone: editForm.phone,
+        subject: role === "teacher" ? editForm.subject : undefined,
+        linkedStudentId: role === "parent" ? editForm.linkedStudentId : undefined,
+        relationship: role === "parent" ? editForm.relationship : undefined,
+        ...(editForm.password ? { password: editForm.password } : {})
+      });
+      toast.success(`${role} updated`);
+      setEditOpen(false);
+    } catch (err: any) {
+      toast.error(`Failed to update ${role}`, {
+        description: err.message || "Please try again.",
+      });
+    }
   };
 
   const handleOpenEdit = (user: any) => {
@@ -138,15 +163,23 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
       course: user.course || "10th",
       batch: user.batch || "Batch 1",
       phone: user.phone || "",
-      subject: user.subject || "Physics"
+      subject: user.subject || "Physics",
+      linkedStudentId: user.linkedStudentId || "",
+      relationship: user.relationship || "Parent"
     });
     setEditOpen(true);
   };
 
-  const onDelete = (id: string, name: string) => {
+  const onDelete = async (id: string, name: string) => {
     if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
-    deleteUser(id, role);
-    toast.success("Deleted");
+    try {
+      await deleteUser(id, role);
+      toast.success("Deleted");
+    } catch (err: any) {
+      toast.error("Delete failed", {
+        description: err.message || "Please try again.",
+      });
+    }
   };
 
   // Helper to determine row coloring class for students based on grade
@@ -253,6 +286,30 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                     </div>
                   )}
 
+                  {role === "parent" && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Linked student</Label>
+                        <Select value={form.linkedStudentId} onValueChange={(val) => setForm({ ...form, linkedStudentId: val })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select student" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {students.map((student) => (
+                              <SelectItem key={student.id} value={student.id}>
+                                {student.full_name || student.email}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Relationship</Label>
+                        <Input value={form.relationship} onChange={(e) => setForm({ ...form, relationship: e.target.value })} />
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <Label>Initial password</Label>
                     <div className="flex gap-2">
@@ -267,7 +324,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit" variant="hero">Create {role}</Button>
+                  <Button type="submit" variant="hero" disabled={role === "parent" && !form.linkedStudentId}>Create {role}</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -347,13 +404,37 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                 </div>
               )}
 
+              {role === "parent" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Linked student</Label>
+                    <Select value={editForm.linkedStudentId} onValueChange={(val) => setEditForm({ ...editForm, linkedStudentId: val })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select student" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {students.map((student) => (
+                          <SelectItem key={student.id} value={student.id}>
+                            {student.full_name || student.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Relationship</Label>
+                    <Input value={editForm.relationship} onChange={(e) => setEditForm({ ...editForm, relationship: e.target.value })} />
+                  </div>
+                </div>
+              )}
+
               <div>
                 <Label>New Password (leave blank to keep current)</Label>
                 <Input type="text" minLength={6} value={editForm.password} onChange={(e) => setEditForm({ ...editForm, password: e.target.value })} placeholder="New password" />
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" variant="hero">Update {role}</Button>
+              <Button type="submit" variant="hero" disabled={role === "parent" && !editForm.linkedStudentId}>Update {role}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -425,6 +506,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                     </>
                   )}
                   {role === "teacher" && <TableHead>Subject</TableHead>}
+                  {role === "parent" && <TableHead>Linked Student</TableHead>}
                   <TableHead>Joined</TableHead>
                   {viewerRole === "admin" && <TableHead className="w-24 text-right pr-4">Actions</TableHead>}
                 </TableRow>
@@ -468,6 +550,14 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                           <span className="inline-flex items-center gap-1 rounded bg-indigo-550/10 px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                             <GraduationCap className="h-3 w-3" />
                             {row.subject || "Physics"}
+                          </span>
+                        </TableCell>
+                      )}
+                      {role === "parent" && (
+                        <TableCell>
+                          <span className="inline-flex items-center gap-1 rounded bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">
+                            <School className="h-3 w-3" />
+                            {students.find((student) => student.id === row.linkedStudentId)?.full_name || row.linkedStudentId || "Not linked"}
                           </span>
                         </TableCell>
                       )}

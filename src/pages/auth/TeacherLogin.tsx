@@ -1,13 +1,7 @@
-import { LoginShell } from "@/components/auth/LoginShell";
+import { Navigate } from "react-router-dom";
 
-const TeacherLogin = () => (
-  <LoginShell
-    role="teacher"
-    title="Teacher sign in"
-    subtitle="Access your classes, exams and students"
-    redirectPath="/teacher/dashboard"
-    showBackToStudent
-  />
-);
+const TeacherLogin = () => {
+  return <Navigate to="/?role=teacher" replace />;
+};
 
 export default TeacherLogin;
