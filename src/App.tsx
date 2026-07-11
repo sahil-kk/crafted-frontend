@@ -34,6 +34,7 @@ import ExamQuestionsEditor from "./pages/shared/ExamQuestionsEditor";
 import AnnouncementsManager from "./pages/shared/AnnouncementsManager";
 import ResultsManager from "./pages/shared/ResultsManager";
 import TimetableManager from "./pages/shared/TimetableManager";
+import ParentCommunicationCenter from "./pages/shared/ParentCommunicationCenter";
 import StudentTimetable from "./pages/student/StudentTimetable";
 
 import NotFound from "./pages/NotFound.tsx";
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="/teacher/announcements" element={<RoleRoute allow={["teacher"]} fallback="/teacher"><AnnouncementsManager viewerRole="teacher" /></RoleRoute>} />
             <Route path="/teacher/results" element={<RoleRoute allow={["teacher"]} fallback="/teacher"><ResultsManager viewerRole="teacher" /></RoleRoute>} />
             <Route path="/teacher/timetable" element={<RoleRoute allow={["teacher"]} fallback="/teacher"><TimetableManager viewerRole="teacher" /></RoleRoute>} />
+            <Route path="/teacher/messages" element={<RoleRoute allow={["teacher"]} fallback="/teacher"><ParentCommunicationCenter role="teacher" /></RoleRoute>} />
 
             {/* Parent */}
             <Route path="/parent/dashboard" element={<RoleRoute allow={["parent"]} fallback="/?role=parent"><ParentDashboard /></RoleRoute>} />
@@ -96,6 +98,7 @@ const App = () => (
             <Route path="/admin/timetable" element={<RoleRoute allow={["admin"]} fallback="/admin"><TimetableManager viewerRole="admin" /></RoleRoute>} />
             <Route path="/admin/payments" element={<RoleRoute allow={["admin"]} fallback="/admin"><AdminPayments /></RoleRoute>} />
             <Route path="/admin/growth-meter" element={<RoleRoute allow={["admin"]} fallback="/admin"><AdminGrowthMeter /></RoleRoute>} />
+            <Route path="/admin/parent-controls" element={<RoleRoute allow={["admin"]} fallback="/admin"><ParentCommunicationCenter role="admin" /></RoleRoute>} />
 
             <Route path="*" element={<NotFound />} />
             </Routes>

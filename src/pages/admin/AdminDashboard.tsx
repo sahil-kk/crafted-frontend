@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Users, GraduationCap, ClipboardList, Video, Database, Radio, Activity, Award,
-  UserCheck, FileText, GraduationCap as TermIcon, FileSpreadsheet, BookOpen, TrendingUp, Settings, ChevronRight
+  UserCheck, FileText, GraduationCap as TermIcon, FileSpreadsheet, BookOpen, TrendingUp, Settings, ChevronRight, MessageSquare
 } from "lucide-react";
 import { useAppData } from "@/hooks/useAppData";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
@@ -149,6 +149,16 @@ const AdminDashboard = () => {
       iconBg: "bg-[#dc2626]",
       iconColor: "text-white",
       borderColor: "border-red-200 dark:border-red-900/40"
+    },
+    {
+      title: "Parent Controls",
+      description: "Monitor messages and parent portal settings",
+      icon: MessageSquare,
+      path: "/admin/parent-controls",
+      bgClass: "bg-[#fff7ed] dark:bg-[#332417] hover:bg-[#ffedd5]",
+      iconBg: "bg-[#ea580c]",
+      iconColor: "text-white",
+      borderColor: "border-orange-200 dark:border-orange-900/40"
     },
     {
       title: "AST Management",

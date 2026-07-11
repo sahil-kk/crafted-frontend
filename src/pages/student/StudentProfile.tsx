@@ -18,32 +18,41 @@ import {
 
 const StudentProfile = () => {
   const { user } = useAuth();
-  const { exams, results, timetables } = useAppData();
+  const { exams, results, timetables, users } = useAppData();
   const fileRef = useRef<HTMLInputElement>(null);
+  const currentStudent = users.find((item) => item.id === user?.id);
 
   const profileStorageKey = useMemo(() => `student-profile-${user?.id || "guest"}`, [user?.id]);
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(currentStudent?.profilePhoto || user?.profilePhoto || null);
   const [editing, setEditing] = useState(false);
-  const [displayName, setDisplayName] = useState(user?.full_name || user?.email?.split("@")[0] || "Student");
+  const [displayName, setDisplayName] = useState(currentStudent?.full_name || user?.full_name || user?.email?.split("@")[0] || "Student");
   const [savedName, setSavedName] = useState(displayName);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ password: "", confirm: "" });
   const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
+    const backendPhoto = currentStudent?.profilePhoto || user?.profilePhoto;
+    const backendName = currentStudent?.full_name || user?.full_name;
+    if (backendPhoto) setPhoto(backendPhoto);
+    if (backendName) {
+      setDisplayName(backendName);
+      setSavedName(backendName);
+    }
+
     try {
       const raw = window.localStorage.getItem(profileStorageKey);
       if (!raw) return;
       const saved = JSON.parse(raw) as { photo?: string; fullName?: string };
-      if (saved.photo) setPhoto(saved.photo);
-      if (saved.fullName) {
+      if (!backendPhoto && saved.photo) setPhoto(saved.photo);
+      if (!backendName && saved.fullName) {
         setDisplayName(saved.fullName);
         setSavedName(saved.fullName);
       }
     } catch {
       window.localStorage.removeItem(profileStorageKey);
     }
-  }, [profileStorageKey]);
+  }, [currentStudent?.full_name, currentStudent?.profilePhoto, profileStorageKey, user?.full_name, user?.profilePhoto]);
 
   const persistProfile = (next: { photo?: string | null; fullName?: string }) => {
     const current = { photo, fullName };
@@ -83,17 +92,26 @@ const StudentProfile = () => {
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const dataUrl = String(reader.result || "");
       setPhoto(dataUrl);
       persistProfile({ photo: dataUrl });
-      toast.success("Profile photo updated");
+      try {
+        await apiClient(`/students/${user?.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ profilePhoto: dataUrl }),
+        });
+        toast.success("Profile photo updated");
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Parent portal will update after the photo is saved";
+        toast.error("Could not sync photo", { description: message });
+      }
     };
     reader.onerror = () => toast.error("Could not read image");
     reader.readAsDataURL(file);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmed = displayName.trim();
     if (!trimmed) {
       toast.error("Name cannot be empty");
@@ -102,8 +120,18 @@ const StudentProfile = () => {
     setSavedName(trimmed);
     setDisplayName(trimmed);
     persistProfile({ fullName: trimmed });
-    setEditing(false);
-    toast.success("Profile updated");
+    try {
+      await apiClient(`/students/${user?.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name: trimmed }),
+      });
+      toast.success("Profile updated");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Parent portal will update after the profile is saved";
+      toast.error("Could not sync profile", { description: message });
+    } finally {
+      setEditing(false);
+    }
   };
 
   const handlePasswordChange = async (event: React.FormEvent) => {
@@ -181,6 +209,10 @@ const StudentProfile = () => {
                     onClick={() => {
                       setPhoto(null);
                       persistProfile({ photo: null });
+                      apiClient(`/students/${user?.id}`, {
+                        method: "PATCH",
+                        body: JSON.stringify({ profilePhoto: "" }),
+                      }).catch(() => undefined);
                       toast.success("Profile photo removed");
                     }}
                     className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white text-destructive border border-border flex items-center justify-center shadow hover:bg-secondary transition-colors"

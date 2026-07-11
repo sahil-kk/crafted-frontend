@@ -170,7 +170,8 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             created_at: u.createdAt || new Date().toISOString(),
             course: u.course || "General",
             phone: u.phone || "",
-            batch: u.batch || "Batch 1"
+            batch: u.batch || "Batch 1",
+            profilePhoto: u.profilePhoto || ""
           })),
           ...(teachers || []).map((u: any) => ({
             id: u._id,

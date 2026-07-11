@@ -91,6 +91,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: "student",
         full_name: data.student.name || identifier,
         created_at: new Date().toISOString(),
+        studentId: data.student.studentId,
+        course: data.student.course,
+        batch: data.student.batch,
+        phone: data.student.phone || "",
+        profilePhoto: data.student.profilePhoto || "",
       };
     } else if (nextRole === "parent" && data.parent) {
       nextUser = {

@@ -111,16 +111,21 @@ const ParentDashboard = () => {
     : "dashboard";
 
   const linkedStudentId = portal?.student?._id || portal?.student?.id || user?.linkedStudentId;
-  const student = portal?.student || appData.users.find((item) => item.id === linkedStudentId) || null;
+  const appUsers = asArray(appData.users);
+  const appResults = asArray(appData.results);
+  const appExams = asArray(appData.exams);
+  const appTimetables = asArray(appData.timetables);
+  const appRecordedClasses = asArray(appData.recordedClasses);
+  const student = portal?.student || appUsers.find((item) => item.id === linkedStudentId) || null;
   const results = asArray(portal?.results).length
     ? asArray(portal?.results)
-    : appData.results.filter((item) => item.studentId === linkedStudentId);
-  const exams = asArray(portal?.exams).length ? asArray(portal?.exams) : appData.exams;
-  const timetables = asArray(portal?.timetables).length ? asArray(portal?.timetables) : appData.timetables;
-  const recordedClasses = asArray(portal?.recordedClasses).length ? asArray(portal?.recordedClasses) : appData.recordedClasses;
+    : appResults.filter((item) => item.studentId === linkedStudentId);
+  const exams = asArray(portal?.exams).length ? asArray(portal?.exams) : appExams;
+  const timetables = asArray(portal?.timetables).length ? asArray(portal?.timetables) : appTimetables;
+  const recordedClasses = asArray(portal?.recordedClasses).length ? asArray(portal?.recordedClasses) : appRecordedClasses;
   const teachers = asArray(portal?.teachers).length
     ? asArray(portal?.teachers)
-    : appData.users.filter((item) => item.role === "teacher");
+    : appUsers.filter((item) => item.role === "teacher");
   const messages = asArray(portal?.messages);
 
   const sendMessage = async (event: React.FormEvent) => {
@@ -179,6 +184,7 @@ const ParentDashboard = () => {
 
   const fullName = student?.name || student?.full_name || "Linked Student";
   const studentId = student?.studentId || linkedStudentId || "Not assigned";
+  const studentPhoto = student?.profilePhoto || student?.avatar_url || "";
   const initials = fullName.slice(0, 2).toUpperCase();
 
   const statCards = [
@@ -238,10 +244,14 @@ const ParentDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="p-6 shadow-card border-border/60 text-center">
               <div
-                className="h-28 w-28 rounded-2xl mx-auto flex items-center justify-center text-white font-bold text-4xl border-4 border-white shadow-xl"
+                className="h-28 w-28 rounded-2xl mx-auto flex items-center justify-center text-white font-bold text-4xl border-4 border-white shadow-xl overflow-hidden"
                 style={{ background: "linear-gradient(135deg, #fe6519, #ff8147)" }}
               >
-                {initials}
+                {studentPhoto ? (
+                  <img src={studentPhoto} alt={fullName} className="h-full w-full object-cover" />
+                ) : (
+                  initials
+                )}
               </div>
               <h3 className="font-display font-bold text-xl mt-4">{fullName}</h3>
               <p className="text-sm text-muted-foreground">Student profile visible to parent</p>
@@ -489,6 +499,18 @@ const ParentDashboard = () => {
                       <Badge className="bg-primary-soft text-primary hover:bg-primary-soft border-0">{message.status || "sent"}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{message.message}</p>
+                    {message.replies?.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {message.replies.slice(-2).map((reply: any, index: number) => (
+                          <div key={reply._id || index} className="rounded-lg bg-secondary/50 px-3 py-2">
+                            <div className="text-[10px] uppercase font-bold text-muted-foreground">
+                              {reply.sender?.name || reply.senderRole || "Teacher"} replied
+                            </div>
+                            <p className="text-xs text-foreground mt-1">{reply.message}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-3">
                       <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
                       {message.teacher?.name || message.teacher?.email || "Teacher"}

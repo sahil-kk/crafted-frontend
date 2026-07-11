@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   GraduationCap, Home, Newspaper, BookOpen, FileText, BarChart3,
   Bell, LogOut, Menu, Users, Megaphone, Settings, ClipboardList, Calendar,
-  UserCircle, Video, CreditCard, TrendingUp, ShieldCheck
+  UserCircle, Video, CreditCard, TrendingUp, ShieldCheck, MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -37,6 +37,7 @@ const navByRole: Record<AppRole, NavItem[]> = {
     { title: "Classes", url: "/teacher/classes", icon: Video },
     { title: "Exams", url: "/teacher/exams", icon: ClipboardList },
     { title: "Results", url: "/teacher/results", icon: BarChart3 },
+    { title: "Messages", url: "/teacher/messages", icon: MessageSquare },
     { title: "Announcements", url: "/teacher/announcements", icon: Megaphone },
   ],
   admin: [
@@ -47,6 +48,7 @@ const navByRole: Record<AppRole, NavItem[]> = {
     { title: "Teachers", url: "/admin/teachers", icon: GraduationCap },
     { title: "Payments", url: "/admin/payments", icon: CreditCard },
     { title: "Growth Meter", url: "/admin/growth-meter", icon: TrendingUp },
+    { title: "Parent Controls", url: "/admin/parent-controls", icon: MessageSquare },
     { title: "Courses", url: "/admin/courses", icon: BookOpen },
     { title: "Exams", url: "/admin/exams", icon: ClipboardList },
     { title: "Results", url: "/admin/results", icon: BarChart3 },

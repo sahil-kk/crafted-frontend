@@ -10,6 +10,7 @@ export interface MockUser {
   course?: string;
   batch?: string;
   phone?: string;
+  profilePhoto?: string;
   subject?: string;
   linkedStudentId?: string;
   relationship?: string;
@@ -90,6 +91,8 @@ export interface MockAppState {
   questions: Question[];
   attempts: ExamAttempt[];
   attemptAnswers: AttemptAnswer[];
+  results: unknown[];
+  timetables: unknown[];
 }
 
 export const createId = (prefix: string) =>
@@ -254,4 +257,6 @@ export const initialMockState: MockAppState = {
     },
   ],
   attemptAnswers: [],
+  results: [],
+  timetables: [],
 };

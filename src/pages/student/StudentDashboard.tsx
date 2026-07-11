@@ -19,7 +19,8 @@ const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satu
 const StudentDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { exams, announcements, results, timetables } = useAppData();
+  const { exams, announcements, results, timetables, users } = useAppData();
+  const currentStudent = users.find((item) => item.id === user?.id);
 
   const [calDate, setCalDate] = useState<Date | undefined>(new Date());
   const [savedProfileName, setSavedProfileName] = useState<string | null>(null);
@@ -27,6 +28,12 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    if (currentStudent?.full_name || currentStudent?.profilePhoto) {
+      setSavedProfileName(currentStudent.full_name || null);
+      setProfilePhoto(currentStudent.profilePhoto || null);
+      return;
+    }
 
     const profileKey = `student-profile-${user?.id || "guest"}`;
     const savedProfile = localStorage.getItem(profileKey);
@@ -44,7 +51,7 @@ const StudentDashboard = () => {
       setSavedProfileName(null);
       setProfilePhoto(null);
     }
-  }, [user?.id]);
+  }, [currentStudent?.full_name, currentStudent?.profilePhoto, user?.id]);
 
   // Real data derivations
   const myResults = (results || []).filter((r: ResultObj) => r.studentId === user?.id);
@@ -68,7 +75,7 @@ const StudentDashboard = () => {
       return ai - bi;
     });
 
-  const displayName = savedProfileName || user?.full_name || user?.email?.split("@")[0] || "Student";
+  const displayName = savedProfileName || currentStudent?.full_name || user?.full_name || user?.email?.split("@")[0] || "Student";
   const studentId = user?.id?.toString().slice(-6).toUpperCase() || "------";
   const fullName = displayName;
   const initials = fullName
