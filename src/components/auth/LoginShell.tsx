@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import {
@@ -47,7 +47,7 @@ export const LoginShell = () => {
     setSearchParams({ role });
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse({ identifier, password });
     if (!parsed.success) {
@@ -69,13 +69,12 @@ export const LoginShell = () => {
             ? "/dashboard"
             : activeRole === "teacher"
             ? "/teacher/dashboard"
-            : activeRole === "parent"
-            ? "/parent/dashboard"
             : "/admin/dashboard";
         navigate(redirectPath, { replace: true });
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to log in");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to log in";
+      toast.error(message);
     } finally {
       setIsLoggingIn(false);
     }
@@ -127,7 +126,7 @@ export const LoginShell = () => {
       subtitle: "Access your classes, exams and students",
       idLabel: "Email / Username",
       idPlaceholder: "e.g. teacher@school.com",
-      footerHint: "💡 Use the username or email address set by your admin."
+      footerHint: "Tip: Use the username or email address set by your admin."
     },
     parent: {
       badgeText: "Parent Access",
@@ -240,7 +239,7 @@ export const LoginShell = () => {
 
         {/* Footer */}
         <div className="text-sm text-white/70 mt-8 lg:mt-0 font-medium">
-          © {new Date().getFullYear()} Crafted. All rights reserved.
+          (c) {new Date().getFullYear()} Crafted. All rights reserved.
         </div>
       </div>
 
@@ -293,7 +292,7 @@ export const LoginShell = () => {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder="********"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="current-password"
