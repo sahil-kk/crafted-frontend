@@ -102,24 +102,24 @@ const StudentCourses = () => {
             <h2 className="font-display text-2xl font-bold">My Courses</h2>
             <p className="text-muted-foreground mt-1">Your enrolled subjects &amp; learning materials</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
             {/* Subject Dropdown */}
-            <div ref={subjectMenuRef} className="relative">
+            <div ref={subjectMenuRef} className="relative shrink-0">
               <button
                 onClick={() => setShowSubjectMenu(!showSubjectMenu)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-background hover:bg-secondary transition-colors text-sm font-medium"
+                className="flex min-w-[84px] items-center justify-between gap-2 rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-secondary"
               >
                 <BookOpen className="h-4 w-4" style={{ color: "#f97316" }} />
-                {subject}
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="max-w-[96px] truncate sm:max-w-[128px]">{subject}</span>
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               </button>
               {showSubjectMenu && (
-                <div className="absolute right-0 top-full mt-1 z-20 bg-background border border-border rounded-xl shadow-elevated min-w-[140px] py-1 animate-fade-in">
+                <div className="absolute left-0 top-full z-20 mt-1 max-h-64 w-[min(13rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-border bg-background py-1 shadow-elevated animate-fade-in sm:left-auto sm:right-0 sm:w-52">
                   {SUBJECTS.map((s) => (
                     <button
                       key={s}
                       onClick={() => { setSubject(s); setShowSubjectMenu(false); }}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-secondary/60 ${subject === s ? "text-[#f97316] font-semibold" : "text-foreground"}`}
+                      className={`w-full truncate px-4 py-2 text-left text-sm transition-colors hover:bg-secondary/60 ${subject === s ? "text-[#f97316] font-semibold" : "text-foreground"}`}
                     >
                       {s}
                     </button>
@@ -128,7 +128,7 @@ const StudentCourses = () => {
               )}
             </div>
             {/* Search */}
-            <div className="relative max-w-xs w-full">
+            <div className="relative min-w-0 flex-1 sm:w-64 sm:flex-none">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={query}
@@ -142,12 +142,12 @@ const StudentCourses = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-secondary/60 mb-6 w-fit">
+      <div className="mb-6 flex w-full max-w-full items-center gap-1 overflow-x-auto rounded-xl bg-secondary/60 p-1 sm:w-fit">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200 sm:px-4 ${
               activeTab === tab.key
                 ? "bg-white text-[#f97316] shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
