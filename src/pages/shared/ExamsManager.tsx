@@ -25,7 +25,7 @@ interface Props {
 type ExamTab = "unit_test" | "practice" | "worksheet" | "all";
 
 const TAB_CONFIG: { key: ExamTab; label: string; icon: any; color: string; description: string }[] = [
-  { key: "all",       label: "All Exams",       icon: ClipboardList, color: "#fe6519", description: "All uploaded exams" },
+  { key: "all",       label: "All Exams",       icon: ClipboardList, color: "#f97316", description: "All uploaded exams" },
   { key: "unit_test", label: "Unit Test",        icon: ClipboardList, color: "#6366f1", description: "Chapter-wise assessments" },
   { key: "practice",  label: "Practice Session", icon: Dumbbell,      color: "#10b981", description: "Practice papers" },
   { key: "worksheet", label: "Worksheet",        icon: BookOpen,      color: "#f59e0b", description: "Exercise sheets" },
@@ -347,7 +347,7 @@ const ExamsManager = ({ viewerRole }: Props) => {
                         )
                       }
                     >
-                      <FileText className="h-3.5 w-3.5" style={{ color: "#fe6519" }} />
+                      <FileText className="h-3.5 w-3.5" style={{ color: "#f97316" }} />
                       View Question Paper (PDF)
                     </Button>
                   )}
@@ -387,7 +387,7 @@ const ExamsManager = ({ viewerRole }: Props) => {
                 <Card key={exam.id} className="px-5 py-4 shadow-card border-border/60 flex items-center gap-4 hover:shadow-elevated transition-smooth">
                   <div
                     className="h-10 w-10 rounded-xl flex items-center justify-center font-bold text-white text-sm shrink-0"
-                    style={{ background: "linear-gradient(135deg, #fe6519, #ff8147)" }}
+                    style={{ background: "linear-gradient(135deg, #f97316, #f97316)" }}
                   >
                     {idx + 1}
                   </div>

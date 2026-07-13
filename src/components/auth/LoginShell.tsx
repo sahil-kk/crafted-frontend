@@ -123,7 +123,7 @@ export const LoginShell = () => {
   const roleConfig = {
     student: {
       badgeText: "Student Portal",
-      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-orange-200/50",
+      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-[#f97316]/50",
       title: "Student Sign In",
       subtitle: "Sign in to continue your learning journey",
       idLabel: "Student ID",
@@ -132,7 +132,7 @@ export const LoginShell = () => {
     },
     teacher: {
       badgeText: "Teacher Portal",
-      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-orange-200/50",
+      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-[#f97316]/50",
       title: "Teacher Sign In",
       subtitle: "Access your classes, exams and students",
       idLabel: "Email / Username",
@@ -141,7 +141,7 @@ export const LoginShell = () => {
     },
     parent: {
       badgeText: "Parent Access",
-      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-orange-200/50",
+      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-[#f97316]/50",
       title: "Parent Sign In",
       subtitle: "Monitor your child's academic progress",
       idLabel: "Student ID / Parent Username",
@@ -150,7 +150,7 @@ export const LoginShell = () => {
     },
     admin: {
       badgeText: "Admin Control",
-      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-orange-200/50",
+      badgeColor: "bg-primary-soft text-primary dark:bg-primary-soft/10 border-[#f97316]/50",
       title: "Admin Sign In",
       subtitle: "Oversee system and platform settings",
       idLabel: "Admin Username",
@@ -184,8 +184,8 @@ export const LoginShell = () => {
             <h1 className="hidden sm:block font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] text-balance">
               Welcome to{" "}
               <span className="block mt-3 lg:inline-block">
-                <span className="inline-flex bg-white px-5 py-2 rounded-2xl shadow-elevated border border-orange-100 hover:rotate-1 transition-transform duration-200">
-                  <span className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider bg-gradient-to-r from-primary to-orange-600 bg-clip-text text-transparent">
+                <span className="inline-flex bg-white px-5 py-2 rounded-2xl shadow-elevated border border-[#f97316]/25 hover:rotate-1 transition-transform duration-200">
+                  <span className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider bg-gradient-to-r from-primary to-[#f97316] bg-clip-text text-transparent">
                     CRAFTED
                   </span>
                 </span>

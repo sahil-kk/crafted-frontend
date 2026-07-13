@@ -203,7 +203,7 @@ const StudentExams = () => {
                         )
                       }
                     >
-                      <FileText className="h-4 w-4" style={{ color: "#fe6519" }} />
+                      <FileText className="h-4 w-4" style={{ color: "#f97316" }} />
                       View Question Paper (PDF)
                     </Button>
                   )}
@@ -247,7 +247,7 @@ const StudentExams = () => {
                   <div className="flex flex-col items-center shrink-0">
                     <div
                       className="h-10 w-10 rounded-xl flex items-center justify-center font-bold text-white text-sm"
-                      style={{ background: "linear-gradient(135deg, #fe6519, #ff8147)" }}
+                      style={{ background: "linear-gradient(135deg, #f97316, #f97316)" }}
                     >
                       {idx + 1}
                     </div>

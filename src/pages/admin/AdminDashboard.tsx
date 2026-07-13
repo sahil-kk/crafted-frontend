@@ -155,10 +155,10 @@ const AdminDashboard = () => {
       description: "Monitor messages and parent portal settings",
       icon: MessageSquare,
       path: "/admin/parent-controls",
-      bgClass: "bg-[#fff7ed] dark:bg-[#332417] hover:bg-[#ffedd5]",
-      iconBg: "bg-[#ea580c]",
+      bgClass: "bg-[#f9731615] dark:bg-[#332417] hover:bg-[#f9731625]",
+      iconBg: "bg-[#f97316]",
       iconColor: "text-white",
-      borderColor: "border-orange-200 dark:border-orange-900/40"
+      borderColor: "border-[#f97316]/30 dark:border-[#f97316]/40"
     },
     {
       title: "AST Management",

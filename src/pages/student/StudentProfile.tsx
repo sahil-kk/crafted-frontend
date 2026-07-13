@@ -147,7 +147,7 @@ const StudentProfile = () => {
   };
 
   const stats = [
-    { label: "Exams Available", value: exams?.length ?? 0, icon: FileText, color: "#fe6519" },
+    { label: "Exams Available", value: exams?.length ?? 0, icon: FileText, color: "#f97316" },
     { label: "Exams Taken", value: myResults.length, icon: CheckCircle2, color: "#10b981" },
     { label: "Avg Score", value: avgScore !== null ? `${avgScore}%` : "—", icon: Trophy, color: "#6366f1" },
     { label: "Classes", value: myTimetable.length, icon: CalendarDays, color: "#f59e0b" },
@@ -172,7 +172,7 @@ const StudentProfile = () => {
               <div className="relative inline-block mx-auto mb-4">
                 <div
                   className="h-28 w-28 rounded-2xl mx-auto flex items-center justify-center text-white font-bold text-4xl border-4 border-white shadow-xl overflow-hidden"
-                  style={{ background: "linear-gradient(135deg, #fe6519, #ff8147)" }}
+                  style={{ background: "linear-gradient(135deg, #f97316, #f97316)" }}
                 >
                   {photo ? (
                     <img src={photo} alt="Profile" className="w-full h-full object-cover" />
@@ -182,7 +182,7 @@ const StudentProfile = () => {
                 </div>
                 <button
                   onClick={() => fileRef.current?.click()}
-                  className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-[#fe6519] text-white flex items-center justify-center shadow-lg hover:bg-[#e55a15] transition-colors"
+                  className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-[#f97316] text-white flex items-center justify-center shadow-lg hover:bg-[#f97316] transition-colors"
                   title="Change photo"
                 >
                   <Camera className="h-3.5 w-3.5" />
@@ -297,7 +297,7 @@ const StudentProfile = () => {
             <Card className="p-6 shadow-card border-border/60">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
-                  <UserCircle className="h-5 w-5" style={{ color: "#fe6519" }} />
+                  <UserCircle className="h-5 w-5" style={{ color: "#f97316" }} />
                   <h3 className="font-display font-bold text-base text-foreground">Personal Information</h3>
                 </div>
                 {!editing && (
@@ -383,7 +383,7 @@ const StudentProfile = () => {
             {/* Performance Summary */}
             <Card className="p-6 shadow-card border-border/60">
               <div className="flex items-center gap-2 mb-5">
-                <Trophy className="h-5 w-5" style={{ color: "#fe6519" }} />
+                <Trophy className="h-5 w-5" style={{ color: "#f97316" }} />
                 <h3 className="font-display font-bold text-base text-foreground">Academic Performance</h3>
               </div>
 
@@ -434,7 +434,7 @@ const StudentProfile = () => {
             {/* Security */}
             <Card className="p-6 shadow-card border-border/60">
               <div className="flex items-center gap-2 mb-4">
-                <Lock className="h-5 w-5" style={{ color: "#fe6519" }} />
+                <Lock className="h-5 w-5" style={{ color: "#f97316" }} />
                 <h3 className="font-display font-bold text-base text-foreground">Security</h3>
               </div>
               <div className="flex items-center justify-between py-3 border-b border-border/50">

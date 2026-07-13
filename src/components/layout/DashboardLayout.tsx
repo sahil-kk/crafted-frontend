@@ -80,7 +80,7 @@ const AppSidebar = ({ role }: { role: AppRole }) => {
             "flex items-center border-b cursor-pointer",
             collapsed ? "justify-center px-2 py-4" : "px-5 py-4"
           )}
-          style={{ borderBottomColor: "#fe651930" }}
+          style={{ borderBottomColor: "#f9731630" }}
           onClick={() => navigate(role === "student" ? "/dashboard" : role === "teacher" ? "/teacher/dashboard" : role === "parent" ? "/parent/dashboard" : "/admin/dashboard")}
         >
           {collapsed ? (
@@ -102,8 +102,8 @@ const AppSidebar = ({ role }: { role: AppRole }) => {
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200 group",
                   collapsed && "justify-center px-2",
                   isActive
-                    ? "bg-[#fe6519] text-white shadow-md"
-                    : "text-[#fe6519]/70 hover:bg-[#fe6519]/10 hover:text-[#fe6519]"
+                    ? "bg-[#f97316] text-white shadow-md"
+                    : "text-[#f97316]/70 hover:bg-[#f97316]/10 hover:text-[#f97316]"
                 )
               }
             >
@@ -112,7 +112,7 @@ const AppSidebar = ({ role }: { role: AppRole }) => {
                   <item.icon className={cn(
                     "shrink-0 transition-all duration-200",
                     collapsed ? "h-5 w-5" : "h-4 w-4",
-                    isActive ? "text-white" : "text-[#fe6519]/70 group-hover:text-[#fe6519]"
+                    isActive ? "text-white" : "text-[#f97316]/70 group-hover:text-[#f97316]"
                   )} />
                   {!collapsed && (
                     <span className="tracking-wide uppercase text-xs">
@@ -152,7 +152,7 @@ const MobileBottomNav = ({ role }: { role: AppRole }) => {
             className={({ isActive }) =>
               cn(
                 "flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 min-w-[52px]",
-                isActive ? "text-[#fe6519]" : "text-gray-400 hover:text-[#fe6519]"
+                isActive ? "text-[#f97316]" : "text-gray-400 hover:text-[#f97316]"
               )
             }
           >
@@ -160,16 +160,16 @@ const MobileBottomNav = ({ role }: { role: AppRole }) => {
               <>
                 <div className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200",
-                  isActive ? "bg-[#fe6519]/10" : ""
+                  isActive ? "bg-[#f97316]/10" : ""
                 )}>
                   <item.icon className={cn(
                     "h-5 w-5 transition-all duration-200",
-                    isActive ? "text-[#fe6519]" : "text-gray-400"
+                    isActive ? "text-[#f97316]" : "text-gray-400"
                   )} />
                 </div>
                 <span className={cn(
                   "text-[9px] font-semibold tracking-wide uppercase leading-none",
-                  isActive ? "text-[#fe6519]" : "text-gray-400"
+                  isActive ? "text-[#f97316]" : "text-gray-400"
                 )}>
                   {item.title === "My Courses" ? "Courses" : item.title}
                 </span>
@@ -184,18 +184,18 @@ const MobileBottomNav = ({ role }: { role: AppRole }) => {
             onClick={toggleSidebar}
             className={cn(
               "flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 min-w-[52px]",
-              open ? "text-[#fe6519]" : "text-gray-400 hover:text-[#fe6519]"
+              open ? "text-[#f97316]" : "text-gray-400 hover:text-[#f97316]"
             )}
           >
             <div className={cn(
               "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200",
-              open ? "bg-[#fe6519]/10" : ""
+              open ? "bg-[#f97316]/10" : ""
             )}>
-              <Menu className={cn("h-5 w-5", open ? "text-[#fe6519]" : "text-gray-400")} />
+              <Menu className={cn("h-5 w-5", open ? "text-[#f97316]" : "text-gray-400")} />
             </div>
             <span className={cn(
               "text-[9px] font-semibold tracking-wide uppercase leading-none",
-              open ? "text-[#fe6519]" : "text-gray-400"
+              open ? "text-[#f97316]" : "text-gray-400"
             )}>
               More
             </span>

@@ -157,7 +157,7 @@ const AdminPayments = () => {
           </div>
         </Card>
 
-        <Card className="p-6 bg-gradient-to-br from-amber-500/10 to-orange-500/5 border-amber-500/20 shadow-sm flex items-center justify-between">
+        <Card className="p-6 bg-gradient-to-br from-amber-500/10 to-[#f97316]/5 border-amber-500/20 shadow-sm flex items-center justify-between">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Pending Receivables</span>
             <h3 className="font-display text-2xl font-bold mt-1 text-foreground">₹{stats.totalPending.toLocaleString()}</h3>

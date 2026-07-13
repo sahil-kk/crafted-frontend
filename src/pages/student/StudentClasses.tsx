@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,31 @@ const StudentCourses = () => {
   const [activeTab, setActiveTab] = useState<TabType>("videos");
   const [showSubjectMenu, setShowSubjectMenu] = useState(false);
   const [active, setActive] = useState<any | null>(null);
+  const subjectMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showSubjectMenu) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!subjectMenuRef.current?.contains(event.target as Node)) {
+        setShowSubjectMenu(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowSubjectMenu(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showSubjectMenu]);
 
   const items = [...recordedClasses].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
@@ -79,12 +104,12 @@ const StudentCourses = () => {
           </div>
           <div className="flex items-center gap-2">
             {/* Subject Dropdown */}
-            <div className="relative">
+            <div ref={subjectMenuRef} className="relative">
               <button
                 onClick={() => setShowSubjectMenu(!showSubjectMenu)}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-background hover:bg-secondary transition-colors text-sm font-medium"
               >
-                <BookOpen className="h-4 w-4" style={{ color: "#fe6519" }} />
+                <BookOpen className="h-4 w-4" style={{ color: "#f97316" }} />
                 {subject}
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
@@ -94,7 +119,7 @@ const StudentCourses = () => {
                     <button
                       key={s}
                       onClick={() => { setSubject(s); setShowSubjectMenu(false); }}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-secondary/60 ${subject === s ? "text-[#fe6519] font-semibold" : "text-foreground"}`}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-secondary/60 ${subject === s ? "text-[#f97316] font-semibold" : "text-foreground"}`}
                     >
                       {s}
                     </button>
@@ -124,7 +149,7 @@ const StudentCourses = () => {
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
               activeTab === tab.key
-                ? "bg-white text-[#fe6519] shadow-sm"
+                ? "bg-white text-[#f97316] shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -161,7 +186,7 @@ const StudentCourses = () => {
                       <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-smooth flex items-center justify-center">
                         <div
                           className="h-12 w-12 rounded-full flex items-center justify-center"
-                          style={{ background: "rgba(254,101,25,0.9)" }}
+                          style={{ background: "rgba(249,115,22,0.9)" }}
                         >
                           <PlayCircle className="h-7 w-7 text-white" />
                         </div>

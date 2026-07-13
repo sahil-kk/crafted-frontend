@@ -32,7 +32,7 @@ const SUGGESTIONS_OTHER = [
 function TypingIndicator() {
   return (
     <div className="flex items-end gap-2.5 justify-start mb-4">
-      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#fe6519,#ff9a56)" }}>
+      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#f97316,#f97316)" }}>
         <Bot className="w-3.5 h-3.5 text-white" />
       </div>
       <div className="chat-bubble-ai px-4 py-3 flex items-center gap-1.5">
@@ -49,7 +49,7 @@ function ChatMessage({ msg }: { msg: Message }) {
   return (
     <div className={cn("flex items-end gap-2.5 mb-4", isUser ? "justify-end" : "justify-start")}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#fe6519,#ff9a56)" }}>
+        <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#f97316,#f97316)" }}>
           <Bot className="w-3.5 h-3.5 text-white" />
         </div>
       )}
@@ -58,7 +58,7 @@ function ChatMessage({ msg }: { msg: Message }) {
         isUser ? "chat-bubble-user rounded-br-sm text-white" : "chat-bubble-ai rounded-bl-sm text-gray-800"
       )}>
         <span style={{ whiteSpace: "pre-wrap" }}>{msg.text}</span>
-        <div className={cn("text-[10px] mt-1 opacity-60", isUser ? "text-orange-100 text-right" : "text-gray-400")}>
+        <div className={cn("text-[10px] mt-1 opacity-60", isUser ? "text-white/80 text-right" : "text-gray-400")}>
           {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </div>
       </div>
@@ -299,11 +299,11 @@ export function AIChatbot() {
   return (
     <>
       <style>{`
-        .chat-bubble-user { background: linear-gradient(135deg, #fe6519, #ff8a40); }
+        .chat-bubble-user { background: linear-gradient(135deg, #f97316, #f97316); }
         .chat-bubble-ai { background: #f0f4ff; border: 1px solid #e4e8f5; }
         .typing-dot {
           display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-          background: #fe6519; animation: typingBounce 1.2s infinite ease-in-out;
+          background: #f97316; animation: typingBounce 1.2s infinite ease-in-out;
         }
         @keyframes typingBounce {
           0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
@@ -316,7 +316,7 @@ export function AIChatbot() {
         }
         .fab-pulse::before {
           content: ''; position: absolute; inset: -4px; border-radius: 50%;
-          background: rgba(254,101,25,0.3); animation: fabPulse 2s infinite;
+          background: rgba(249,115,22,0.3); animation: fabPulse 2s infinite;
         }
         @keyframes fabPulse {
           0%, 100% { transform: scale(1); opacity: 0.6; }
@@ -326,7 +326,7 @@ export function AIChatbot() {
         .chat-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .chat-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
         .suggestion-chip { transition: all 0.15s ease; }
-        .suggestion-chip:hover { background: #fe6519; color: white; border-color: #fe6519; transform: translateY(-1px); }
+        .suggestion-chip:hover { background: #f97316; color: white; border-color: #f97316; transform: translateY(-1px); }
       `}</style>
 
       {/* FAB */}
@@ -339,7 +339,7 @@ export function AIChatbot() {
             <button
               onClick={() => setOpen(true)}
               className="fab-pulse relative w-14 h-14 rounded-full shadow-2xl text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
-              style={{ background: "linear-gradient(135deg, #fe6519, #ff8a40)" }}
+              style={{ background: "linear-gradient(135deg, #f97316, #f97316)" }}
               title="Open AI Assistant"
             >
               <Sparkles className="w-6 h-6" />
@@ -359,14 +359,14 @@ export function AIChatbot() {
           style={{ transition: "height 0.2s ease, width 0.2s ease" }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ background: "linear-gradient(135deg, #fe6519, #ff8a40)" }}>
+          <div className="flex items-center justify-between px-4 py-3 shrink-0" style={{ background: "linear-gradient(135deg, #f97316, #f97316)" }}>
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <div>
                 <div className="text-white font-semibold text-sm leading-none">AI Assistant</div>
-                <div className="text-orange-100 text-[10px] mt-0.5 flex items-center gap-1">
+                <div className="text-white/80 text-[10px] mt-0.5 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-300 inline-block" />
                   Powered by Gemini · Knows your data
                 </div>
@@ -398,7 +398,7 @@ export function AIChatbot() {
               {messages.length === 1 && !loading && (
                 <div className="flex flex-wrap gap-1.5 px-4 pb-2">
                   {SUGGESTIONS.map((s) => (
-                    <button key={s} onClick={() => sendMessage(s)} className="suggestion-chip px-3 py-1 rounded-full border border-[#fe6519]/40 text-[#fe6519] text-xs font-medium bg-orange-50">
+                    <button key={s} onClick={() => sendMessage(s)} className="suggestion-chip px-3 py-1 rounded-full border border-[#f97316]/40 text-[#f97316] text-xs font-medium bg-[#f97316]/10">
                       {s}
                     </button>
                   ))}
@@ -407,7 +407,7 @@ export function AIChatbot() {
 
               {/* Input */}
               <div className="border-t border-gray-100 p-3 shrink-0">
-                <div className="flex items-end gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200 focus-within:border-[#fe6519] focus-within:ring-1 focus-within:ring-[#fe6519]/20 transition-all">
+                <div className="flex items-end gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200 focus-within:border-[#f97316] focus-within:ring-1 focus-within:ring-[#f97316]/20 transition-all">
                   <textarea
                     ref={inputRef}
                     value={input}
@@ -423,7 +423,7 @@ export function AIChatbot() {
                     onClick={() => sendMessage(input)}
                     disabled={!input.trim() || loading}
                     className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-110 active:scale-95"
-                    style={{ background: input.trim() && !loading ? "linear-gradient(135deg,#fe6519,#ff8a40)" : "#e5e7eb" }}
+                    style={{ background: input.trim() && !loading ? "linear-gradient(135deg,#f97316,#f97316)" : "#e5e7eb" }}
                   >
                     <Send className={cn("w-3.5 h-3.5", input.trim() && !loading ? "text-white" : "text-gray-400")} />
                   </button>

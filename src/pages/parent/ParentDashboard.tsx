@@ -188,7 +188,7 @@ const ParentDashboard = () => {
   const initials = fullName.slice(0, 2).toUpperCase();
 
   const statCards = [
-    { label: "Average", value: chartData.length ? `${avg}%` : "No data", icon: BarChart3, color: "#fe6519" },
+    { label: "Average", value: chartData.length ? `${avg}%` : "No data", icon: BarChart3, color: "#f97316" },
     { label: "Best Score", value: chartData.length ? `${best}%` : "No data", icon: Award, color: "#10b981" },
     { label: "Growth", value: chartData.length > 1 ? `${growth >= 0 ? "+" : ""}${growth}%` : "No data", icon: TrendingUp, color: "#6366f1" },
     { label: "Exams", value: rows.length, icon: ClipboardList, color: "#f59e0b" },
@@ -199,7 +199,7 @@ const ParentDashboard = () => {
       <div className="space-y-6">
         <div
           className="relative overflow-hidden rounded-2xl px-6 py-6"
-          style={{ background: "linear-gradient(120deg, #fe6519 0%, #ff8147 62%, #ffb07a 100%)" }}
+          style={{ background: "linear-gradient(120deg, #f97316 0%, #f97316 62%, #f97316 100%)" }}
         >
           <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -245,7 +245,7 @@ const ParentDashboard = () => {
             <Card className="p-6 shadow-card border-border/60 text-center">
               <div
                 className="h-28 w-28 rounded-2xl mx-auto flex items-center justify-center text-white font-bold text-4xl border-4 border-white shadow-xl overflow-hidden"
-                style={{ background: "linear-gradient(135deg, #fe6519, #ff8147)" }}
+                style={{ background: "linear-gradient(135deg, #f97316, #f97316)" }}
               >
                 {studentPhoto ? (
                   <img src={studentPhoto} alt={fullName} className="h-full w-full object-cover" />
@@ -308,7 +308,7 @@ const ParentDashboard = () => {
                       <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} />
                       <YAxis domain={[0, 100]} tickLine={false} axisLine={false} fontSize={11} />
                       <RechartsTooltip formatter={(value: any, _name: any, props: any) => [`${value}%`, props.payload.subject]} />
-                      <Line type="monotone" dataKey="percent" stroke="#fe6519" strokeWidth={3} activeDot={{ r: 6 }} />
+                      <Line type="monotone" dataKey="percent" stroke="#f97316" strokeWidth={3} activeDot={{ r: 6 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

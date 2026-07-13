@@ -70,9 +70,9 @@ const StudentDashboard = () => {
           {/* Welcome Banner with Photo + Student ID */}
           <div
             className="relative overflow-hidden rounded-2xl min-h-[164px] sm:min-h-[190px] px-4 sm:px-6 py-5 sm:py-6"
-            style={{ background: "linear-gradient(120deg, #fe6519 0%, #ff8147 60%, #ffab76 100%)" }}
+            style={{ background: "linear-gradient(120deg, #f97316 0%, #f97316 60%, #f97316 100%)" }}
           >
-            <div className="absolute inset-0 z-[5] bg-[linear-gradient(to_right,rgba(254,101,25,0.95)_0%,rgba(254,101,25,0.86)_50%,rgba(254,101,25,0.18)_100%)] sm:bg-[linear-gradient(to_right,rgba(254,101,25,0.96)_0%,rgba(254,101,25,0.82)_46%,rgba(254,101,25,0.06)_100%)]" />
+            <div className="absolute inset-0 z-[5] bg-[linear-gradient(to_right,rgba(249,115,22,0.95)_0%,rgba(249,115,22,0.86)_50%,rgba(249,115,22,0.18)_100%)] sm:bg-[linear-gradient(to_right,rgba(249,115,22,0.96)_0%,rgba(249,115,22,0.82)_46%,rgba(249,115,22,0.06)_100%)]" />
 
             {/* Left: Avatar + Info — width-capped so image never overlaps */}
             <div className="relative z-10 flex h-full min-h-[124px] items-center gap-3 sm:gap-5 pr-[112px] sm:pr-[190px] md:pr-[240px] min-w-0">
@@ -128,7 +128,7 @@ const StudentDashboard = () => {
           {/* Quick Stats Row */}
           <div className="grid grid-cols-3 gap-3 sm:gap-4">
             {[
-              { label: "Avg Score", value: avgScore !== null ? `${avgScore}%` : "—", icon: Trophy, color: "#fe6519" },
+              { label: "Avg Score", value: avgScore !== null ? `${avgScore}%` : "—", icon: Trophy, color: "#f97316" },
               { label: "Exams", value: exams?.length ?? 0, icon: FileText, color: "#6366f1" },
               { label: "Classes", value: myTimetable.length, icon: CalendarDays, color: "#10b981" },
             ].map((stat) => (
@@ -155,7 +155,7 @@ const StudentDashboard = () => {
                 variant="ghost"
                 size="sm"
                 className="text-xs gap-1 shrink-0"
-                style={{ color: "#fe6519" }}
+                style={{ color: "#f97316" }}
                 onClick={() => navigate("/dashboard/exams")}
               >
                 View All <ChevronRight className="h-3.5 w-3.5" />
@@ -176,9 +176,9 @@ const StudentDashboard = () => {
                     <div className="col-span-6 flex items-center gap-3">
                       <div
                         className="h-9 w-9 rounded-full flex items-center justify-center shrink-0"
-                        style={{ background: "#fe651920" }}
+                        style={{ background: "#f9731620" }}
                       >
-                        <FileText className="h-4 w-4" style={{ color: "#fe6519" }} />
+                        <FileText className="h-4 w-4" style={{ color: "#f97316" }} />
                       </div>
                       <div className="font-medium text-sm text-foreground truncate">{exam.title}</div>
                     </div>
@@ -203,7 +203,7 @@ const StudentDashboard = () => {
                 <h3 className="font-display font-bold text-lg text-foreground">Previous Exam Marks</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Your recent assessment results</p>
               </div>
-              <Star className="h-5 w-5" style={{ color: "#fe6519" }} />
+              <Star className="h-5 w-5" style={{ color: "#f97316" }} />
             </div>
             {recentMarks.length === 0 ? (
               <div className="px-6 py-10 text-center text-sm text-muted-foreground">
@@ -228,9 +228,9 @@ const StudentDashboard = () => {
                           <div className="flex items-center gap-2">
                             <div
                               className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-                              style={{ background: "#fe651915" }}
+                              style={{ background: "#f9731615" }}
                             >
-                              <BookOpen className="h-3.5 w-3.5" style={{ color: "#fe6519" }} />
+                              <BookOpen className="h-3.5 w-3.5" style={{ color: "#f97316" }} />
                             </div>
                             <span className="text-sm font-medium text-foreground truncate">{r.subject}</span>
                           </div>
@@ -239,7 +239,7 @@ const StudentDashboard = () => {
                           <span className="text-xs text-muted-foreground capitalize">{r.examType || "—"}</span>
                         </div>
                         <div className="col-span-2 text-center">
-                          <span className="font-bold text-sm" style={{ color: "#fe6519" }}>{r.score}</span>
+                          <span className="font-bold text-sm" style={{ color: "#f97316" }}>{r.score}</span>
                           <span className="text-xs text-muted-foreground">/{r.maxScore || 100}</span>
                         </div>
                         <div className="col-span-3 text-right">
@@ -267,8 +267,8 @@ const StudentDashboard = () => {
                       >
                         <defs>
                           <linearGradient id="perfGrad2" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#fe6519" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#fe6519" stopOpacity={0} />
+                            <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -279,9 +279,9 @@ const StudentDashboard = () => {
                           formatter={(val: any) => [`${val}%`, "Score"]}
                         />
                         <Area
-                          type="monotone" dataKey="pct" stroke="#fe6519" strokeWidth={2}
+                          type="monotone" dataKey="pct" stroke="#f97316" strokeWidth={2}
                           fillOpacity={1} fill="url(#perfGrad2)"
-                          dot={{ fill: "#fe6519", r: 2.5 }} activeDot={{ r: 4.5 }}
+                          dot={{ fill: "#f97316", r: 2.5 }} activeDot={{ r: 4.5 }}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -298,7 +298,7 @@ const StudentDashboard = () => {
                 <h3 className="font-display font-bold text-lg text-foreground">My Timetable</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">Your weekly class schedule</p>
               </div>
-              <CalendarDays className="h-5 w-5" style={{ color: "#fe6519" }} />
+              <CalendarDays className="h-5 w-5" style={{ color: "#f97316" }} />
             </div>
             {myTimetable.length === 0 ? (
               <div className="px-6 py-10 text-center text-sm text-muted-foreground">
@@ -311,7 +311,7 @@ const StudentDashboard = () => {
                     <div className="w-20 shrink-0">
                       <span
                         className="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide text-white"
-                        style={{ background: "#fe6519" }}
+                        style={{ background: "#f97316" }}
                       >
                         {t.day?.slice(0, 3)}
                       </span>
@@ -353,8 +353,8 @@ const StudentDashboard = () => {
                 head_cell: "w-9 font-semibold text-[10px] uppercase text-center",
                 row: "flex w-full justify-between mt-1",
                 cell: "h-9 w-9 text-center p-0 flex items-center justify-center relative",
-                day: "h-9 w-9 rounded-full hover:bg-[#fe6519]/10 hover:text-[#fe6519] transition-colors font-medium text-sm flex items-center justify-center",
-                day_selected: "!bg-[#fe6519] !text-white font-bold",
+                day: "h-9 w-9 rounded-full hover:bg-[#f97316]/10 hover:text-[#f97316] transition-colors font-medium text-sm flex items-center justify-center",
+                day_selected: "!bg-[#f97316] !text-white font-bold",
                 day_today: "bg-green-100 text-green-700 font-bold",
                 day_outside: "opacity-30",
                 day_disabled: "opacity-25",
@@ -391,7 +391,7 @@ const StudentDashboard = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Avg Score</span>
-                <span className="font-bold" style={{ color: "#fe6519" }}>
+                <span className="font-bold" style={{ color: "#f97316" }}>
                   {avgScore !== null ? `${avgScore}%` : "No results"}
                 </span>
               </div>
@@ -412,7 +412,7 @@ const StudentDashboard = () => {
                   <div className="h-2 bg-secondary rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-700"
-                      style={{ width: `${avgScore}%`, background: "linear-gradient(90deg, #fe6519, #ff8147)" }}
+                      style={{ width: `${avgScore}%`, background: "linear-gradient(90deg, #f97316, #f97316)" }}
                     />
                   </div>
                   <div className="text-[10px] text-muted-foreground mt-1 text-right">{avgScore}% overall</div>

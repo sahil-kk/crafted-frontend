@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 /* ===== Tuition App Design System =====
-   Primary brand: vibrant orange #f36523
+   Primary brand: vibrant orange #f97316
    All colors MUST be HSL.
 */
 
@@ -21,9 +21,9 @@
     --popover-foreground: 222 25% 12%;
 
     /* Brand orange */
-    --primary: 19 90% 55%;            /* #f36523 */
+    --primary: 25 95% 53%;            /* #f97316 */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 18 80% 47%;       /* #d9541a */
+    --primary-hover: 25 95% 53%;       /* #f97316 */
     --primary-soft: 22 100% 97%;       /* #fff6f2 */
 
     --secondary: 220 16% 96%;
@@ -33,7 +33,7 @@
     --muted-foreground: 220 10% 46%;
 
     --accent: 22 100% 97%;             /* light orange */
-    --accent-foreground: 19 90% 35%;
+    --accent-foreground: 25 95% 53%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -44,28 +44,28 @@
 
     --border: 220 14% 92%;
     --input: 220 14% 92%;
-    --ring: 19 90% 55%;
+    --ring: 25 95% 53%;
 
     --radius: 0.875rem;
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222 18% 30%;
-    --sidebar-primary: 19 90% 55%;
+    --sidebar-primary: 25 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 22 100% 97%;
-    --sidebar-accent-foreground: 19 90% 40%;
+    --sidebar-accent-foreground: 25 95% 53%;
     --sidebar-border: 220 14% 94%;
-    --sidebar-ring: 19 90% 55%;
+    --sidebar-ring: 25 95% 53%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(19 90% 55%), hsl(14 90% 50%));
+    --gradient-primary: linear-gradient(135deg, #f97316, #f97316);
     --gradient-soft: linear-gradient(180deg, hsl(22 100% 98%), hsl(0 0% 100%));
 
     /* Shadows */
     --shadow-card: 0 1px 2px hsl(220 20% 20% / 0.04), 0 4px 16px -4px hsl(220 20% 20% / 0.06);
-    --shadow-elevated: 0 4px 24px -8px hsl(19 90% 55% / 0.18);
-    --shadow-glow: 0 8px 32px -12px hsl(19 90% 55% / 0.45);
+    --shadow-elevated: 0 4px 24px -8px hsl(25 95% 53% / 0.18);
+    --shadow-glow: 0 8px 32px -12px hsl(25 95% 53% / 0.45);
 
     /* Motion */
     --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -78,29 +78,29 @@
     --card-foreground: 0 0% 98%;
     --popover: 222 22% 11%;
     --popover-foreground: 0 0% 98%;
-    --primary: 19 90% 55%;
+    --primary: 25 95% 53%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 18 80% 47%;
+    --primary-hover: 25 95% 53%;
     --primary-soft: 19 40% 14%;
     --secondary: 222 18% 16%;
     --secondary-foreground: 0 0% 98%;
     --muted: 222 18% 16%;
     --muted-foreground: 220 10% 65%;
     --accent: 19 40% 14%;
-    --accent-foreground: 19 90% 70%;
+    --accent-foreground: 25 95% 53%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
     --border: 222 18% 18%;
     --input: 222 18% 18%;
-    --ring: 19 90% 55%;
+    --ring: 25 95% 53%;
     --sidebar-background: 222 22% 10%;
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 19 90% 55%;
+    --sidebar-primary: 25 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 18% 16%;
-    --sidebar-accent-foreground: 19 90% 70%;
+    --sidebar-accent-foreground: 25 95% 53%;
     --sidebar-border: 222 18% 16%;
-    --sidebar-ring: 19 90% 55%;
+    --sidebar-ring: 25 95% 53%;
   }
 }
 
