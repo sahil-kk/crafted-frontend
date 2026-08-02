@@ -31,10 +31,10 @@ export const LoginShell = () => {
   const navigate = useNavigate();
   const { signIn } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Get active role from search parameters, default to student
   const activeRole = (searchParams.get("role") || "student") as LoginRole;
-  
+
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -69,7 +69,7 @@ export const LoginShell = () => {
     setIsLoggingIn(true);
     try {
       await signIn(activeRole, identifier, password);
-      
+
       if (activeRole === "parent") {
         toast.success("Signed in successfully as Parent");
         navigate("/parent/dashboard", { replace: true });
@@ -79,8 +79,8 @@ export const LoginShell = () => {
           activeRole === "student"
             ? "/dashboard"
             : activeRole === "teacher"
-            ? "/teacher/dashboard"
-            : "/admin/dashboard";
+              ? "/teacher/dashboard"
+              : "/admin/dashboard";
         navigate(redirectPath, { replace: true });
       }
     } catch (error: unknown) {
@@ -171,10 +171,10 @@ export const LoginShell = () => {
 
         {/* Top: Logo */}
         <div className="flex items-center justify-center lg:justify-start gap-2.5 mb-5 lg:mb-0">
-          <img 
-            src="/logo.svg" 
-            alt="Crafted" 
-            className="h-12 sm:h-14 lg:h-16 w-auto max-w-[168px] sm:max-w-[190px] lg:max-w-[200px] object-contain bg-white rounded-xl lg:rounded-2xl shadow-elevated px-4 py-2.5 lg:p-3 lg:pl-4 lg:pr-4 transition-all duration-300 hover:scale-105" 
+          <img
+            src="/logo.svg"
+            alt="Crafted"
+            className="h-12 sm:h-14 lg:h-16 w-auto max-w-[168px] sm:max-w-[190px] lg:max-w-[200px] object-contain bg-white rounded-xl lg:rounded-2xl shadow-elevated px-4 py-2.5 lg:p-3 lg:pl-4 lg:pr-4 transition-all duration-300 hover:scale-105"
           />
         </div>
 
@@ -191,8 +191,8 @@ export const LoginShell = () => {
                 </span>
               </span>
             </h1>
-            <p className="text-white text-center lg:text-left text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 font-semibold sm:font-medium">
-              Empowering education through innovative learning management. Connect students, teachers, and administrators in one powerful platform.
+            <p className="text-white/95 text-center lg:text-left text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 font-semibold sm:font-medium">
+              Learn from the people who've been there and <span className="bg-white text-primary px-2 py-0.5 rounded-lg font-bold inline-block ml-1 shadow-sm">done it.</span>
             </p>
           </div>
 
@@ -202,7 +202,7 @@ export const LoginShell = () => {
               <Sparkles className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-white animate-pulse" />
               <span>Select Your Role</span>
             </div>
-            
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               {roleCards.map((rc) => {
                 const IconComponent = rc.icon;
@@ -213,11 +213,10 @@ export const LoginShell = () => {
                     key={rc.id}
                     onClick={() => handleRoleChange(rc.id)}
                     aria-pressed={isSelected}
-                    className={`relative min-h-[104px] lg:min-h-0 rounded-2xl p-3.5 lg:p-5 cursor-pointer border transition-all duration-300 flex flex-col items-center lg:items-start text-center lg:text-left gap-2.5 lg:gap-3 group ${
-                      isSelected
+                    className={`relative min-h-[104px] lg:min-h-0 rounded-2xl p-3.5 lg:p-5 cursor-pointer border transition-all duration-300 flex flex-col items-center lg:items-start text-center lg:text-left gap-2.5 lg:gap-3 group ${isSelected
                         ? "bg-white/20 border-white shadow-[0_10px_30px_rgba(0,0,0,0.15)] ring-2 lg:ring-4 ring-white/10"
                         : "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 hover:scale-[1.01]"
-                    }`}
+                      }`}
                   >
                     {/* Active selection dot */}
                     {isSelected && (
@@ -227,11 +226,10 @@ export const LoginShell = () => {
                       </span>
                     )}
 
-                    <div className={`p-3 rounded-xl transition-all duration-300 ${
-                      isSelected 
-                        ? "bg-white text-primary shadow-sm" 
+                    <div className={`p-3 rounded-xl transition-all duration-300 ${isSelected
+                        ? "bg-white text-primary shadow-sm"
                         : "bg-white/10 text-white group-hover:bg-white/20"
-                    }`}>
+                      }`}>
                       <IconComponent className="h-5 w-5 lg:h-6 lg:w-6" />
                     </div>
 
@@ -252,7 +250,7 @@ export const LoginShell = () => {
 
         {/* Footer */}
         <div className="text-xs sm:text-sm text-white/70 mt-5 lg:mt-0 font-medium">
-          (c) {new Date().getFullYear()} Crafted. All rights reserved.
+          © {new Date().getFullYear()} Crafted. All rights reserved.
         </div>
       </div>
 
@@ -297,7 +295,7 @@ export const LoginShell = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -328,9 +326,9 @@ export const LoginShell = () => {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
-                size="lg" 
+              <Button
+                type="submit"
+                size="lg"
                 className="w-full h-12 mt-2 bg-primary hover:bg-primary-hover text-white font-semibold rounded-xl shadow-elevated hover:shadow-glow hover:-translate-y-0.5 transition-smooth border-none outline-none"
                 disabled={isLoggingIn}
               >
