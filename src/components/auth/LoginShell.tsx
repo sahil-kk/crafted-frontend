@@ -179,16 +179,22 @@ export const LoginShell = () => {
         </div>
 
         {/* Center Content */}
-        <div className="space-y-5 lg:space-y-8 my-auto max-w-2xl py-1 lg:py-0">
+        <div className="space-y-5 lg:space-y-8 mt-4 mb-auto lg:mt-10 lg:mb-auto max-w-2xl py-1 lg:py-0">
           <div className="space-y-3 lg:space-y-4">
             <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] text-balance text-center lg:text-left">
               Welcome to{" "}
-              <span className="block mt-3 lg:inline-block font-baloo font-extrabold text-slate-950 lg:ml-2">
-                craft<span className="text-white">ed.</span>
+              <span className="block mt-3 lg:inline-block">
+                <span className="inline-flex bg-white px-5 py-2 rounded-2xl shadow-elevated border border-[#f97316]/25 hover:rotate-1 transition-transform duration-200">
+                  <span className="font-baloo text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider bg-gradient-to-r from-primary to-[#f97316] bg-clip-text text-transparent">
+                    crafted.
+                  </span>
+                </span>
               </span>
             </h1>
-            <p className="text-white/95 text-center lg:text-left text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 font-semibold sm:font-medium">
-              Learn from the people who've been there and <span className="bg-white text-primary px-2 py-0.5 rounded-lg font-bold inline-block ml-1 shadow-sm">done it.</span>
+            <p className="text-white/95 text-center lg:text-left text-xl sm:text-2xl lg:text-3xl leading-relaxed max-w-xl mx-auto lg:mx-0 font-semibold sm:font-medium">
+              Learn from the<br />
+              people who've been<br />
+              there and <span className="text-slate-950 font-black ml-1">done it.</span>
             </p>
           </div>
 
@@ -229,12 +235,9 @@ export const LoginShell = () => {
                       <IconComponent className="h-5 w-5 lg:h-6 lg:w-6" />
                     </div>
 
-                    <div className="space-y-1 min-w-0">
+                    <div className="min-w-0">
                       <div className="font-bold text-sm text-white leading-tight">
                         {rc.title}
-                      </div>
-                      <div className="text-[11px] lg:text-xs text-white/80 leading-snug line-clamp-2">
-                        {rc.description}
                       </div>
                     </div>
                   </button>

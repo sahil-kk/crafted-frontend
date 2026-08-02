@@ -198,7 +198,9 @@ const StudentExams = () => {
                       className="w-full text-sm gap-2"
                       onClick={() =>
                         window.open(
-                          `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace("/api", "")}/uploads/${exam.pdf}`,
+                          exam.pdf.startsWith("http")
+                            ? exam.pdf
+                            : `${(import.meta.env.VITE_API_URL || "http://localhost:5001/api").replace("/api", "")}/uploads/${exam.pdf}`,
                           "_blank"
                         )
                       }

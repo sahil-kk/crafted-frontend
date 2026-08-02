@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, Users, Copy, Pencil, Phone, BookOpen, GraduationCap, School } from "lucide-react";
 import { toast } from "sonner";
 import { AppRole } from "@/hooks/useAuth";
@@ -27,6 +28,20 @@ const randomPassword = () => {
   return `${output}!`;
 };
 
+const getAutofilledPassword = (fullName: string, course: string) => {
+  const prefixMap: Record<string, string> = {
+    "8th": "C8",
+    "9th": "C9",
+    "10th": "C10",
+    "11th": "C11",
+    "12th": "C12"
+  };
+  const prefix = prefixMap[course] || "C10";
+  const rawFirstName = fullName.trim().split(" ")[0] || "Student";
+  const firstName = rawFirstName.charAt(0).toUpperCase() + rawFirstName.slice(1);
+  return `${firstName}@${prefix}`;
+};
+
 export const ManageUsersPage = ({ role, viewerRole, title, description }: Props) => {
   const { users, createUser, deleteUser, updateUser } = useAppData();
   const [query, setQuery] = useState("");
@@ -40,13 +55,14 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
   const [form, setForm] = useState({ 
     email: "", 
     full_name: "", 
-    password: randomPassword(),
+    password: role === "student" ? getAutofilledPassword("", "10th") : randomPassword(),
     course: "10th", 
     batch: "Batch 1", 
     phone: "", 
     subject: "Physics",
     linkedStudentId: "",
-    relationship: "Parent"
+    relationship: "Parent",
+    assignedCourses: ["Physics", "Chemistry", "Biology", "Mathematics"]
   });
   
   const [editForm, setEditForm] = useState({ 
@@ -59,7 +75,8 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
     phone: "",
     subject: "Physics",
     linkedStudentId: "",
-    relationship: "Parent"
+    relationship: "Parent",
+    assignedCourses: [] as string[]
   });
 
   const students = users.filter((user) => user.role === "student");
@@ -94,7 +111,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createUser({ 
+      const res = await createUser({ 
         email: form.email, 
         full_name: form.full_name, 
         role,
@@ -105,22 +122,27 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
         subject: role === "teacher" ? form.subject : undefined,
         linkedStudentId: role === "parent" ? form.linkedStudentId : undefined,
         relationship: role === "parent" ? form.relationship : undefined,
+        assignedCourses: role === "student" ? form.assignedCourses : undefined,
       });
+      const generatedId = role === "student" ? (res?.student?.studentId || res?.studentId) : null;
       toast.success(`${role} created`, {
-        description: `${form.email} / ${form.password}`,
+        description: generatedId 
+          ? `ID: ${generatedId} / Password: ${form.password}`
+          : `${form.email} / ${form.password}`,
         duration: 10000,
       });
       setOpen(false);
       setForm({ 
         email: "", 
         full_name: "", 
-        password: randomPassword(), 
+        password: role === "student" ? getAutofilledPassword("", "10th") : randomPassword(), 
         course: "10th", 
         batch: "Batch 1", 
         phone: "", 
         subject: "Physics",
         linkedStudentId: "",
-        relationship: "Parent"
+        relationship: "Parent",
+        assignedCourses: ["Physics", "Chemistry", "Biology", "Mathematics"]
       });
     } catch (err: any) {
       toast.error(`Failed to create ${role}`, {
@@ -143,6 +165,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
         subject: role === "teacher" ? editForm.subject : undefined,
         linkedStudentId: role === "parent" ? editForm.linkedStudentId : undefined,
         relationship: role === "parent" ? editForm.relationship : undefined,
+        assignedCourses: role === "student" ? editForm.assignedCourses : undefined,
         ...(editForm.password ? { password: editForm.password } : {})
       });
       toast.success(`${role} updated`);
@@ -165,7 +188,8 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
       phone: user.phone || "",
       subject: user.subject || "Physics",
       linkedStudentId: user.linkedStudentId || "",
-      relationship: user.relationship || "Parent"
+      relationship: user.relationship || "Parent",
+      assignedCourses: user.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"]
     });
     setEditOpen(true);
   };
@@ -223,11 +247,30 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                 <div className="space-y-4 py-4">
                   <div>
                     <Label>Full name</Label>
-                    <Input required value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="e.g. John Doe" />
+                    <Input 
+                      required 
+                      value={form.full_name} 
+                      onChange={(e) => {
+                        const nameVal = e.target.value;
+                        setForm((prev) => {
+                          const updated = { ...prev, full_name: nameVal };
+                          if (role === "student") {
+                            updated.password = getAutofilledPassword(nameVal, prev.course);
+                          }
+                          return updated;
+                        });
+                      }} 
+                      placeholder="e.g. John Doe" 
+                    />
                   </div>
                   <div>
-                    <Label>Email (Username)</Label>
+                    <Label>Email Address</Label>
                     <Input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="e.g. john@school.com" />
+                    {role === "student" && (
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Note: Student ID will be generated automatically (e.g. C1001) based on the class.
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label>Phone number</Label>
@@ -235,10 +278,21 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                   </div>
 
                   {role === "student" && (
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-4">
                       <div>
                         <Label>Class / Grade</Label>
-                        <Select value={form.course} onValueChange={(val) => setForm({ ...form, course: val })}>
+                        <Select 
+                          value={form.course} 
+                          onValueChange={(val) => {
+                            setForm((prev) => {
+                              const updated = { ...prev, course: val };
+                              if (role === "student") {
+                                updated.password = getAutofilledPassword(prev.full_name, val);
+                              }
+                              return updated;
+                            });
+                          }}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select class" />
                           </SelectTrigger>
@@ -251,20 +305,29 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                           </SelectContent>
                         </Select>
                       </div>
-                      <div>
-                        <Label>Student Batch</Label>
-                        <Select value={form.batch} onValueChange={(val) => setForm({ ...form, batch: val })}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select batch" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Batch 1">Batch 1</SelectItem>
-                            <SelectItem value="Batch 2">Batch 2</SelectItem>
-                            <SelectItem value="Batch 3">Batch 3</SelectItem>
-                            <SelectItem value="Batch 4">Batch 4</SelectItem>
-                            <SelectItem value="Batch 5">Batch 5</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="space-y-2">
+                        <Label>Assigned Courses</Label>
+                        <div className="grid grid-cols-2 gap-3 p-3 border border-border rounded-xl bg-secondary/20">
+                          {["Physics", "Chemistry", "Biology", "Mathematics"].map((subj) => {
+                            const isChecked = form.assignedCourses.includes(subj);
+                            return (
+                              <label key={subj} className="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
+                                <Checkbox 
+                                  checked={isChecked} 
+                                  onCheckedChange={(checked) => {
+                                    setForm((prev) => {
+                                      const nextCourses = checked 
+                                        ? [...prev.assignedCourses, subj]
+                                        : prev.assignedCourses.filter((x) => x !== subj);
+                                      return { ...prev, assignedCourses: nextCourses };
+                                    });
+                                  }}
+                                />
+                                {subj}
+                              </label>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -353,7 +416,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
               </div>
 
               {role === "student" && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
                     <Label>Class / Grade</Label>
                     <Select value={editForm.course} onValueChange={(val) => setEditForm({ ...editForm, course: val })}>
@@ -369,20 +432,29 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label>Student Batch</Label>
-                    <Select value={editForm.batch} onValueChange={(val) => setEditForm({ ...editForm, batch: val })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select batch" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Batch 1">Batch 1</SelectItem>
-                        <SelectItem value="Batch 2">Batch 2</SelectItem>
-                        <SelectItem value="Batch 3">Batch 3</SelectItem>
-                        <SelectItem value="Batch 4">Batch 4</SelectItem>
-                        <SelectItem value="Batch 5">Batch 5</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-2">
+                    <Label>Assigned Courses</Label>
+                    <div className="grid grid-cols-2 gap-3 p-3 border border-border rounded-xl bg-secondary/20">
+                      {["Physics", "Chemistry", "Biology", "Mathematics"].map((subj) => {
+                        const isChecked = editForm.assignedCourses.includes(subj);
+                        return (
+                          <label key={subj} className="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
+                            <Checkbox 
+                              checked={isChecked} 
+                              onCheckedChange={(checked) => {
+                                  setEditForm((prev) => {
+                                    const nextCourses = checked 
+                                      ? [...prev.assignedCourses, subj]
+                                      : prev.assignedCourses.filter((x) => x !== subj);
+                                    return { ...prev, assignedCourses: nextCourses };
+                                  });
+                              }}
+                            />
+                            {subj}
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
@@ -502,7 +574,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                   {role === "student" && (
                     <>
                       <TableHead>Class</TableHead>
-                      <TableHead>Batch</TableHead>
+                      <TableHead>Courses</TableHead>
                     </>
                   )}
                   {role === "teacher" && <TableHead>Subject</TableHead>}
@@ -539,9 +611,13 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                             <span className="font-semibold">{row.course || "8th"}</span>
                           </TableCell>
                           <TableCell>
-                            <span className="inline-flex items-center gap-1 rounded bg-secondary/80 px-2 py-0.5 text-xs font-semibold text-secondary-foreground">
-                              {row.batch || "Batch 1"}
-                            </span>
+                            <div className="flex flex-wrap gap-1 max-w-[200px]">
+                              {(row.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"]).map((c: string) => (
+                                <span key={c} className="inline-flex items-center rounded bg-secondary/80 px-1.5 py-0.5 text-[10px] font-semibold text-secondary-foreground">
+                                  {c}
+                                </span>
+                              ))}
+                            </div>
                           </TableCell>
                         </>
                       )}

@@ -30,6 +30,7 @@ interface CreateUserInput {
   relationship?: string;
   profilePhoto?: string;
   password?: string;
+  assignedCourses?: string[];
 }
 
 interface UpdateUserInput {
@@ -45,6 +46,7 @@ interface UpdateUserInput {
   linkedStudentId?: string;
   relationship?: string;
   profilePhoto?: string;
+  assignedCourses?: string[];
 }
 
 interface CreateCourseInput {
@@ -91,12 +93,16 @@ interface SubmitExamInput {
 }
 
 interface AppDataContextValue extends MockAppState {
-  createUser: (input: CreateUserInput) => Promise<void>;
+  createUser: (input: CreateUserInput) => Promise<any>;
   deleteUser: (id: string, role?: string) => Promise<void>;
   updateUser: (input: UpdateUserInput) => Promise<void>;
   createCourse: (input: CreateCourseInput) => void;
   deleteCourse: (id: string) => void;
   updateCourse: (id: string, input: Partial<CreateCourseInput>) => void;
+  addChapter: (courseId: string, title: string) => Promise<any>;
+  deleteChapter: (courseId: string, chapterId: string) => Promise<any>;
+  uploadMaterial: (courseId: string, chapterId: string, payload: FormData) => Promise<any>;
+  deleteMaterial: (courseId: string, chapterId: string, materialId: string, type: "note" | "assignment") => Promise<any>;
   createClass: (input: CreateClassInput) => void;
   deleteClass: (id: string) => void;
   updateClass: (id: string, input: Partial<CreateClassInput>) => void;
@@ -173,7 +179,8 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             course: u.course || "General",
             phone: u.phone || "",
             batch: u.batch || "Batch 1",
-            profilePhoto: u.profilePhoto || ""
+            profilePhoto: u.profilePhoto || "",
+            assignedCourses: u.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"]
           })),
           ...(teachers || []).map((u: any) => ({
             id: u._id,
@@ -210,9 +217,11 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           ...prev,
           users: combinedUsers,
           courses: (courses || []).map(c => ({
-            id: c._id,
-            name: c.name,
-            description: c.description,
+            id: c._id || c.id,
+            _id: c._id,
+            classGrade: c.classGrade,
+            subject: c.subject,
+            chapters: c.chapters || [],
             created_at: c.createdAt || new Date().toISOString()
           })),
           announcements: (announcements || []).map(a => ({
@@ -265,10 +274,10 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         let endpoint = input.role === "teacher" ? "/admin/teachers" : input.role === "parent" ? "/parents" : "/students";
         let body: any = { password, email: input.email, name: input.full_name };
         if (input.role === "student") {
-          body.studentId = input.email.split('@')[0];
           body.course = input.course || "10th";
           body.batch = input.batch || "Batch 1";
           body.phone = input.phone || "";
+          body.assignedCourses = input.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"];
         } else {
           body.phone = input.phone || "";
           body.subject = input.subject || "Physics";
@@ -298,10 +307,12 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
               subject: input.subject || (input.role === "teacher" ? "Physics" : undefined),
               linkedStudentId: input.linkedStudentId,
               relationship: input.relationship,
+              assignedCourses: res.student?.assignedCourses || input.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"],
             },
             ...prev.users,
           ],
         }));
+        return res;
       } catch (err) {
         console.error(err);
         throw err;
@@ -335,6 +346,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         if (input.linkedStudentId !== undefined) body.studentId = input.linkedStudentId;
         if (input.relationship !== undefined) body.relationship = input.relationship;
         if (input.role === "parent") body.username = input.email;
+        if (input.assignedCourses !== undefined) body.assignedCourses = input.assignedCourses;
         
         await apiClient<any>(endpoint, { method: "PATCH", body: JSON.stringify(body) });
         
@@ -351,6 +363,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
               profilePhoto: input.profilePhoto !== undefined ? input.profilePhoto : u.profilePhoto,
               linkedStudentId: input.linkedStudentId !== undefined ? input.linkedStudentId : u.linkedStudentId,
               relationship: input.relationship !== undefined ? input.relationship : u.relationship,
+              assignedCourses: input.assignedCourses !== undefined ? input.assignedCourses : u.assignedCourses,
             } : u)
         }));
       } catch (err) {
@@ -395,6 +408,56 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         ...prev,
         courses: prev.courses.map((item) => item.id === id ? { ...item, ...input } : item),
       }));
+    },
+    addChapter: async (courseId, title) => {
+      const res = await apiClient<any>(`/courses/${courseId}/chapters`, {
+        method: "POST",
+        body: JSON.stringify({ title }),
+      });
+      setState((prev) => ({
+        ...prev,
+        courses: prev.courses.map((c) =>
+          c.id === courseId ? { ...c, chapters: res.course?.chapters || c.chapters } : c
+        ),
+      }));
+      return res;
+    },
+    deleteChapter: async (courseId, chapterId) => {
+      const res = await apiClient<any>(`/courses/${courseId}/chapters/${chapterId}`, {
+        method: "DELETE",
+      });
+      setState((prev) => ({
+        ...prev,
+        courses: prev.courses.map((c) =>
+          c.id === courseId ? { ...c, chapters: res.course?.chapters || c.chapters } : c
+        ),
+      }));
+      return res;
+    },
+    uploadMaterial: async (courseId, chapterId, payload) => {
+      const res = await apiClient<any>(`/courses/${courseId}/chapters/${chapterId}/upload`, {
+        method: "POST",
+        body: payload,
+      });
+      setState((prev) => ({
+        ...prev,
+        courses: prev.courses.map((c) =>
+          c.id === courseId ? { ...c, chapters: res.course?.chapters || c.chapters } : c
+        ),
+      }));
+      return res;
+    },
+    deleteMaterial: async (courseId, chapterId, materialId, type) => {
+      const res = await apiClient<any>(`/courses/${courseId}/chapters/${chapterId}/materials/${materialId}?type=${type}`, {
+        method: "DELETE",
+      });
+      setState((prev) => ({
+        ...prev,
+        courses: prev.courses.map((c) =>
+          c.id === courseId ? { ...c, chapters: res.course?.chapters || c.chapters } : c
+        ),
+      }));
+      return res;
     },
     createClass: async (input) => {
       try {

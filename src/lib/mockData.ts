@@ -14,13 +14,40 @@ export interface MockUser {
   subject?: string;
   linkedStudentId?: string;
   relationship?: string;
+  assignedCourses?: string[];
+}
+
+export interface NoteObj {
+  _id?: string;
+  id?: string;
+  title: string;
+  fileUrl: string;
+  createdAt?: string;
+}
+
+export interface AssignmentObj {
+  _id?: string;
+  id?: string;
+  title: string;
+  fileUrl: string;
+  createdAt?: string;
+}
+
+export interface ChapterObj {
+  _id?: string;
+  id?: string;
+  title: string;
+  notes: NoteObj[];
+  assignments: AssignmentObj[];
 }
 
 export interface Course {
   id: string;
-  name: string;
-  description: string;
-  created_at: string;
+  _id?: string;
+  classGrade: string;
+  subject: string;
+  chapters: ChapterObj[];
+  created_at?: string;
 }
 
 export interface RecordedClass {

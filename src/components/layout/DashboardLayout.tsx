@@ -6,7 +6,7 @@ import {
   UserCircle, Video, CreditCard, TrendingUp, ShieldCheck, MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
@@ -216,7 +216,24 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const initials = (user?.email ?? "U").slice(0, 2).toUpperCase();
+  const { announcements, users } = useAppData();
+
+  const currentUserData = users.find((item) => item.id === user?.id);
+  const fullName = currentUserData?.full_name || user?.full_name || user?.email?.split("@")[0] || "User";
+  const userPhoto = currentUserData?.profilePhoto || user?.profilePhoto || null;
+  const initials = fullName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "U";
+
+  const getPhotoUrl = (path: string | null) => {
+    if (!path) return "";
+    if (path.startsWith("http") || path.startsWith("data:")) return path;
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `${(import.meta.env.VITE_API_URL || "http://localhost:5001/api").replace("/api", "")}${cleanPath}`;
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -226,7 +243,6 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
     else navigate("/");
   };
 
-  const { announcements } = useAppData();
   const hasNews = (announcements || []).length > 0;
 
   // Bell nav target per role
@@ -281,18 +297,19 @@ export const DashboardLayout = ({ role, title, children }: DashboardLayoutProps)
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 hover:bg-secondary rounded-lg p-1 pr-3 transition-smooth">
                     <Avatar className="h-8 w-8">
+                      {userPhoto && <AvatarImage src={getPhotoUrl(userPhoto)} alt={fullName} className="object-cover" />}
                       <AvatarFallback className="bg-primary-soft text-primary text-xs font-semibold">{initials}</AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-left">
-                      <div className="text-sm font-medium leading-none">{user?.email?.split("@")[0]}</div>
+                      <div className="text-sm font-medium leading-none">{fullName}</div>
                       <div className="text-xs text-muted-foreground capitalize mt-0.5">{role}</div>
                     </div>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
-                    <div className="text-sm font-medium">{user?.email}</div>
-                    <div className="text-xs text-muted-foreground capitalize mt-0.5">{role} account</div>
+                    <div className="text-sm font-medium">{fullName}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{user?.email}</div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {role === "student" && (

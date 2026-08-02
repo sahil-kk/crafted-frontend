@@ -342,7 +342,9 @@ const ExamsManager = ({ viewerRole }: Props) => {
                       className="w-full text-xs gap-1.5"
                       onClick={() =>
                         window.open(
-                          `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace("/api", "")}/uploads/${row.pdf}`,
+                          row.pdf.startsWith("http")
+                            ? row.pdf
+                            : `${(import.meta.env.VITE_API_URL || "http://localhost:5001/api").replace("/api", "")}/uploads/${row.pdf}`,
                           "_blank"
                         )
                       }

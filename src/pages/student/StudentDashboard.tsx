@@ -91,11 +91,6 @@ const StudentDashboard = () => {
               </div>
               {/* Name + ID */}
               <div className="min-w-0 flex-1 max-w-[440px]">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="bg-white/25 text-white text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full tracking-widest uppercase whitespace-nowrap">
-                    Gold Member
-                  </span>
-                </div>
                 <h2 className="font-display font-bold text-white leading-tight truncate text-[18px] sm:text-2xl lg:text-3xl">
                   {fullName}
                 </h2>
