@@ -214,8 +214,8 @@ export const LoginShell = () => {
                     onClick={() => handleRoleChange(rc.id)}
                     aria-pressed={isSelected}
                     className={`relative min-h-[104px] lg:min-h-0 rounded-2xl p-3.5 lg:p-5 cursor-pointer border transition-all duration-300 flex flex-col items-center lg:items-start text-center lg:text-left gap-2.5 lg:gap-3 group ${isSelected
-                        ? "bg-white/20 border-white shadow-[0_10px_30px_rgba(0,0,0,0.15)] ring-2 lg:ring-4 ring-white/10"
-                        : "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 hover:scale-[1.01]"
+                      ? "bg-white/20 border-white shadow-[0_10px_30px_rgba(0,0,0,0.15)] ring-2 lg:ring-4 ring-white/10"
+                      : "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10 hover:scale-[1.01]"
                       }`}
                   >
                     {/* Active selection dot */}
@@ -227,8 +227,8 @@ export const LoginShell = () => {
                     )}
 
                     <div className={`p-3 rounded-xl transition-all duration-300 ${isSelected
-                        ? "bg-white text-primary shadow-sm"
-                        : "bg-white/10 text-white group-hover:bg-white/20"
+                      ? "bg-white text-primary shadow-sm"
+                      : "bg-white/10 text-white group-hover:bg-white/20"
                       }`}>
                       <IconComponent className="h-5 w-5 lg:h-6 lg:w-6" />
                     </div>
