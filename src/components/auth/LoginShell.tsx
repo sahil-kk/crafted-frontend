@@ -183,8 +183,8 @@ export const LoginShell = () => {
           <div className="space-y-3 lg:space-y-4">
             <h1 className="hidden sm:block font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] text-balance">
               Welcome to{" "}
-              <span className="block mt-3 lg:inline-block font-black tracking-wider text-slate-950 lg:ml-2">
-                CRAFTED
+              <span className="block mt-3 lg:inline-block font-baloo font-extrabold tracking-wider text-slate-950 lg:ml-2">
+                crafted
               </span>
             </h1>
             <p className="text-white/95 text-center lg:text-left text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 font-semibold sm:font-medium">

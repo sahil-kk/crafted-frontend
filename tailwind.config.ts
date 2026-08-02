@@ -14,6 +14,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        baloo: ['"Baloo 2"', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
