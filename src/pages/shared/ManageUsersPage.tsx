@@ -42,6 +42,14 @@ const getAutofilledPassword = (fullName: string, course: string) => {
   return `${firstName}@${prefix}`;
 };
 
+const formatStudentId = (user: any) => {
+  if (user.studentId) return user.studentId;
+  const rawId = user.id || "";
+  if (/^C\d+/.test(rawId)) return rawId;
+  const classNum = user.course?.replace("th", "") || "10";
+  return `C${classNum}XX`;
+};
+
 export const ManageUsersPage = ({ role, viewerRole, title, description }: Props) => {
   const { users, createUser, deleteUser, updateUser } = useAppData();
   const [query, setQuery] = useState("");
@@ -569,7 +577,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-4">Name</TableHead>
+                  <TableHead className="pl-4 w-[35%]">Name</TableHead>
                   {role !== "student" && (
                     <>
                       <TableHead>Email</TableHead>
@@ -578,7 +586,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                   )}
                   {role === "student" && (
                     <>
-                      <TableHead>Class</TableHead>
+                      <TableHead className="w-[20%]">Class</TableHead>
                       <TableHead>Courses</TableHead>
                     </>
                   )}
@@ -606,8 +614,8 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                         <div className="flex items-center gap-2">
                           <span className="text-foreground">{row.full_name || "-"}</span>
                           {role === "student" && (
-                            <span className="inline-flex items-center rounded-full bg-orange-550/10 px-2 py-0.5 text-xs font-semibold text-[#f97316]">
-                              {row.studentId || row.id?.toString().slice(-6).toUpperCase() || "C10XX"}
+                            <span className="inline-flex items-center rounded-full bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 px-2.5 py-0.5 text-xs font-semibold text-[#f97316]">
+                              {formatStudentId(row)}
                             </span>
                           )}
                         </div>
