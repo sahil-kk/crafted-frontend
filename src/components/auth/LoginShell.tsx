@@ -181,7 +181,7 @@ export const LoginShell = () => {
         {/* Center Content */}
         <div className="space-y-5 lg:space-y-8 my-auto max-w-2xl py-1 lg:py-0">
           <div className="space-y-3 lg:space-y-4">
-            <h1 className="hidden sm:block font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] text-balance">
+            <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] text-balance text-center lg:text-left">
               Welcome to{" "}
               <span className="block mt-3 lg:inline-block font-baloo font-extrabold text-slate-950 lg:ml-2">
                 crafted
