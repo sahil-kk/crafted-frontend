@@ -172,6 +172,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         const combinedUsers = [
           ...(students || []).map((u: any) => ({
             id: u._id || u.studentId,
+            studentId: u.studentId || "",
             email: u.email,
             full_name: u.name,
             role: "student" as const,
@@ -297,6 +298,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           users: [
             {
               id: actualId,
+              studentId: res.student?.studentId || "",
               email: input.email,
               full_name: input.full_name,
               role: input.role,

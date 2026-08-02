@@ -47,6 +47,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
 
   // Filter States
   const [selectedClass, setSelectedClass] = useState<string>("all");
@@ -569,8 +570,12 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
               <TableHeader>
                 <TableRow>
                   <TableHead className="pl-4">Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
+                  {role !== "student" && (
+                    <>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                    </>
+                  )}
                   {role === "student" && (
                     <>
                       <TableHead>Class</TableHead>
@@ -579,32 +584,45 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                   )}
                   {role === "teacher" && <TableHead>Subject</TableHead>}
                   {role === "parent" && <TableHead>Linked Student</TableHead>}
-                  <TableHead>Joined</TableHead>
-                  {viewerRole === "admin" && <TableHead className="w-24 text-right pr-4">Actions</TableHead>}
+                  {role !== "student" && <TableHead>Joined</TableHead>}
+                  {viewerRole === "admin" && role !== "student" && <TableHead className="w-24 text-right pr-4">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((row) => {
                   const studentRowStyle = role === "student" ? getStudentRowClass(row.course) : "hover:bg-muted/50 transition-all";
+                  const clickHandler = () => {
+                    if (role === "student") {
+                      setSelectedStudent(row);
+                    }
+                  };
                   return (
-                    <TableRow key={row.id} className={studentRowStyle}>
+                    <TableRow 
+                      key={row.id} 
+                      className={`${studentRowStyle} ${role === "student" ? "cursor-pointer" : ""}`}
+                      onClick={clickHandler}
+                    >
                       <TableCell className="font-semibold pl-4">
                         <div className="flex items-center gap-2">
                           <span className="text-foreground">{row.full_name || "-"}</span>
                           {role === "student" && (
-                            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                              {row.course || "N/A"}
+                            <span className="inline-flex items-center rounded-full bg-orange-550/10 px-2 py-0.5 text-xs font-semibold text-[#f97316]">
+                              {row.studentId || row.id?.toString().slice(-6).toUpperCase() || "C10XX"}
                             </span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{row.email}</TableCell>
-                      <TableCell className="text-sm">
-                        <div className="flex items-center gap-1.5 text-foreground/80">
-                          <Phone className="h-3 w-3 text-muted-foreground" />
-                          <span>{row.phone || "No phone"}</span>
-                        </div>
-                      </TableCell>
+                      {role !== "student" && (
+                        <>
+                          <TableCell className="text-muted-foreground text-sm">{row.email}</TableCell>
+                          <TableCell className="text-sm">
+                            <div className="flex items-center gap-1.5 text-foreground/80">
+                              <Phone className="h-3 w-3 text-muted-foreground" />
+                              <span>{row.phone || "No phone"}</span>
+                            </div>
+                          </TableCell>
+                        </>
+                      )}
                       {role === "student" && (
                         <>
                           <TableCell>
@@ -637,10 +655,12 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                           </span>
                         </TableCell>
                       )}
-                      <TableCell className="text-muted-foreground text-xs">
-                        {format(new Date(row.created_at), "MMM d, yyyy")}
-                      </TableCell>
-                      {viewerRole === "admin" && (
+                      {role !== "student" && (
+                        <TableCell className="text-muted-foreground text-xs">
+                          {format(new Date(row.created_at), "MMM d, yyyy")}
+                        </TableCell>
+                      )}
+                      {viewerRole === "admin" && role !== "student" && (
                         <TableCell className="text-right pr-4">
                           <div className="flex items-center justify-end gap-1">
                             <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(row)} className="hover:bg-primary-soft hover:text-primary">
@@ -660,6 +680,99 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
           </div>
         )}
       </Card>
+
+      {/* Student Details Popup Modal */}
+      <Dialog open={!!selectedStudent} onOpenChange={(open) => { if (!open) setSelectedStudent(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-display font-bold">
+              <span>Student Details</span>
+              <span className="inline-flex items-center rounded-full bg-orange-550/10 px-2.5 py-0.5 text-xs font-semibold text-[#f97316]">
+                {selectedStudent?.studentId || selectedStudent?.id?.toString().slice(-6).toUpperCase()}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedStudent && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4 border-b border-border/40 pb-4">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Full Name</span>
+                  <p className="font-semibold text-foreground text-sm mt-0.5">{selectedStudent.full_name}</p>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Class / Grade</span>
+                  <p className="font-semibold text-foreground text-sm mt-0.5">{selectedStudent.course || "8th"} Grade</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 border-b border-border/40 pb-4">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email Address</span>
+                  <p className="text-foreground text-sm mt-0.5 break-all">{selectedStudent.email}</p>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phone Number</span>
+                  <p className="text-foreground text-sm mt-0.5">{selectedStudent.phone || "No phone linked"}</p>
+                </div>
+              </div>
+
+              <div className="border-b border-border/40 pb-4">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1.5">Assigned Courses</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(selectedStudent.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"]).map((c: string) => (
+                    <span key={c} className="inline-flex items-center rounded bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Enrolled On</span>
+                <p className="text-foreground text-sm mt-0.5">
+                  {format(new Date(selectedStudent.created_at), "MMMM d, yyyy")}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex sm:justify-between gap-2 border-t border-border/40 pt-4">
+            {viewerRole === "admin" && (
+              <>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="gap-1.5"
+                  onClick={() => {
+                    const studentCopy = { ...selectedStudent };
+                    setSelectedStudent(null);
+                    handleOpenEdit(studentCopy);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" /> Edit Student
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  className="gap-1.5"
+                  onClick={() => {
+                    const studentId = selectedStudent.id;
+                    const studentName = selectedStudent.full_name;
+                    setSelectedStudent(null);
+                    onDelete(studentId, studentName);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" /> Delete Student
+                </Button>
+              </>
+            )}
+            <Button type="button" variant="ghost" onClick={() => setSelectedStudent(null)} className="ml-auto">
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
