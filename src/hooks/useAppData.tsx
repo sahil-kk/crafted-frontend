@@ -93,6 +93,7 @@ interface SubmitExamInput {
 }
 
 interface AppDataContextValue extends MockAppState {
+  isLoading: boolean;
   createUser: (input: CreateUserInput) => Promise<any>;
   deleteUser: (id: string, role?: string) => Promise<void>;
   updateUser: (input: UpdateUserInput) => Promise<void>;
@@ -148,14 +149,19 @@ const loadState = (): MockAppState => {
 export const AppDataProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<MockAppState>(initialMockState);
   const [payments, setPayments] = useState<PaymentObj[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { session } = useAuth();
   
   useEffect(() => {
-    if (!session?.access_token) return;
+    if (!session?.access_token) {
+      setIsLoading(false);
+      return;
+    }
     
     // Fetch initial state from backend
     const fetchAll = async () => {
       try {
+        setIsLoading(true);
         const [students, teachers, parents, courses, announcements, exams, classes, results, timetables, loadedPayments] = await Promise.all([
           apiClient<any[]>("/students").catch(() => []),
           apiClient<any[]>("/admin/teachers").catch(() => []),
@@ -254,8 +260,10 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             created_at: e.createdAt || new Date().toISOString()
           })),
         }));
+        setIsLoading(false);
       } catch (err) {
         console.error("Failed to fetch initial state", err);
+        setIsLoading(false);
       }
     };
     fetchAll();
@@ -269,6 +277,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo<AppDataContextValue>(() => ({
     ...state,
+    isLoading,
     createUser: async (input) => {
       try {
         const password = input.password || "password123"; // default fallback for local mock
@@ -794,7 +803,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         );
       }
     },
-  }), [state, payments]);
+  }), [state, payments, isLoading]);
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
 };

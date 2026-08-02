@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Users, Copy, Pencil, Phone, BookOpen, GraduationCap, School } from "lucide-react";
+import { Plus, Trash2, Users, Copy, Pencil, Phone, BookOpen, GraduationCap, School, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppRole } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
@@ -51,7 +51,7 @@ const formatStudentId = (user: any) => {
 };
 
 export const ManageUsersPage = ({ role, viewerRole, title, description }: Props) => {
-  const { users, createUser, deleteUser, updateUser } = useAppData();
+  const { users, createUser, deleteUser, updateUser, isLoading } = useAppData();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -87,6 +87,19 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
     relationship: "Parent",
     assignedCourses: [] as string[]
   });
+
+  if (isLoading) {
+    return (
+      <DashboardLayout title={title} description={description}>
+        <Card className="p-6 border-border/40">
+          <div className="flex h-[400px] flex-col items-center justify-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground text-center">Loading {role}s list...</p>
+          </div>
+        </Card>
+      </DashboardLayout>
+    );
+  }
 
   const students = users.filter((user) => user.role === "student");
 
