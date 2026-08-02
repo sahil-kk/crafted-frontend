@@ -6,7 +6,7 @@ import { useAppData } from "@/hooks/useAppData";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/apiClient";
 import {
-  UserCircle, Camera, X, GraduationCap
+  UserCircle, Camera, X, GraduationCap, Loader2
 } from "lucide-react";
 
 const StudentProfile = () => {
@@ -16,6 +16,7 @@ const StudentProfile = () => {
   const currentStudent = users.find((item) => item.id === user?.id);
 
   const [photo, setPhoto] = useState<string | null>(currentStudent?.profilePhoto || user?.profilePhoto || null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const backendPhoto = currentStudent?.profilePhoto ?? user?.profilePhoto ?? "";
@@ -40,6 +41,7 @@ const StudentProfile = () => {
     }
 
     try {
+      setIsUploading(true);
       const formData = new FormData();
       formData.append("photo", file);
 
@@ -54,8 +56,10 @@ const StudentProfile = () => {
         role: "student",
         profilePhoto: res.profilePhoto,
       });
+      setIsUploading(false);
       toast.success("Profile photo updated");
     } catch (err: unknown) {
+      setIsUploading(false);
       setPhoto(currentStudent?.profilePhoto || user?.profilePhoto || null);
       const message = err instanceof Error ? err.message : "Please try again.";
       toast.error("Could not save photo to database", { description: message });
@@ -85,7 +89,7 @@ const StudentProfile = () => {
               {/* Photo */}
               <div className="relative inline-block mx-auto mb-4">
                 <div
-                  className="h-28 w-28 rounded-2xl mx-auto flex items-center justify-center text-white font-bold text-4xl border-4 border-white shadow-xl overflow-hidden"
+                  className="h-28 w-28 rounded-2xl mx-auto flex items-center justify-center text-white font-bold text-4xl border-4 border-white shadow-xl overflow-hidden relative"
                   style={{ background: "linear-gradient(135deg, #f97316, #f97316)" }}
                 >
                   {photo ? (
@@ -93,10 +97,17 @@ const StudentProfile = () => {
                   ) : (
                     initials
                   )}
+                  {isUploading && (
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1 z-10">
+                      <Loader2 className="h-5 w-5 animate-spin text-white" />
+                      <span className="text-[10px] font-semibold text-white tracking-wide uppercase">Saving...</span>
+                    </div>
+                  )}
                 </div>
                 <button
-                  onClick={() => fileRef.current?.click()}
-                  className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-[#f97316] text-white flex items-center justify-center shadow-lg hover:bg-[#f97316] transition-colors"
+                  onClick={() => !isUploading && fileRef.current?.click()}
+                  disabled={isUploading}
+                  className={`absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-[#f97316] text-white flex items-center justify-center shadow-lg hover:bg-[#f97316] transition-colors ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
                   title="Change photo"
                 >
                   <Camera className="h-3.5 w-3.5" />
