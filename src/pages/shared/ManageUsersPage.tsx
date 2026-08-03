@@ -88,19 +88,6 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
     assignedCourses: [] as string[]
   });
 
-  if (isLoading) {
-    return (
-      <DashboardLayout title={title} description={description}>
-        <Card className="p-6 border-border/40">
-          <div className="flex h-[400px] flex-col items-center justify-center gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground text-center">Loading {role}s list...</p>
-          </div>
-        </Card>
-      </DashboardLayout>
-    );
-  }
-
   const students = users.filter((user) => user.role === "student");
 
   const rows = useMemo(() => {
@@ -129,6 +116,19 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
       )
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
   }, [query, role, users, selectedClass, selectedSubject]);
+
+  if (isLoading) {
+    return (
+      <DashboardLayout role={viewerRole} title={title} description={description}>
+        <Card className="p-6 border-border/40">
+          <div className="flex h-[400px] flex-col items-center justify-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground text-center">Loading {role}s list...</p>
+          </div>
+        </Card>
+      </DashboardLayout>
+    );
+  }
 
   const onCreate = async (e: React.FormEvent) => {
     e.preventDefault();
