@@ -24,7 +24,7 @@ const StudentProfile = () => {
   }, [currentStudent?.profilePhoto, user?.profilePhoto]);
 
   const fullName = currentStudent?.full_name || user?.full_name || user?.email?.split("@")[0] || "Student";
-  const studentId = user?.id?.toString().slice(-6).toUpperCase() || "------";
+  const studentId = currentStudent?.studentId || user?.studentId || "------";
   const email = user?.email || "—";
   const initials = fullName.slice(0, 2).toUpperCase();
 

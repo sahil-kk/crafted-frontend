@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Users, Copy, Pencil, Phone, BookOpen, GraduationCap, School, Loader2 } from "lucide-react";
+import { Plus, Trash2, Users, Copy, Pencil, Phone, BookOpen, GraduationCap, School, Loader2, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppRole } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
@@ -590,7 +590,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-4 w-[35%]">Name</TableHead>
+                  <TableHead className="pl-4">Name</TableHead>
                   {role !== "student" && (
                     <>
                       <TableHead>Email</TableHead>
@@ -599,7 +599,9 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                   )}
                   {role === "student" && (
                     <>
-                      <TableHead className="w-[20%]">Class</TableHead>
+                      <TableHead>Student ID</TableHead>
+                      <TableHead>Class</TableHead>
+                      <TableHead>Phone</TableHead>
                       <TableHead>Courses</TableHead>
                     </>
                   )}
@@ -624,13 +626,21 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                       onClick={clickHandler}
                     >
                       <TableCell className="font-semibold pl-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-foreground">{row.full_name || "-"}</span>
-                          {role === "student" && (
-                            <span className="inline-flex items-center rounded-full bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 px-2.5 py-0.5 text-xs font-semibold text-[#f97316]">
-                              {formatStudentId(row)}
-                            </span>
+                        <div className="flex items-center gap-2.5">
+                          {row.profilePhoto ? (
+                            <img
+                              src={row.profilePhoto}
+                              alt={row.full_name}
+                              className="h-8 w-8 rounded-full object-cover shrink-0 border border-border"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                              <span className="text-xs font-bold text-primary">
+                                {(row.full_name || "?").slice(0, 2).toUpperCase()}
+                              </span>
+                            </div>
                           )}
+                          <span className="text-foreground">{row.full_name || "-"}</span>
                         </div>
                       </TableCell>
                       {role !== "student" && (
@@ -647,7 +657,16 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                       {role === "student" && (
                         <>
                           <TableCell>
+                            <span className="font-mono text-xs font-semibold text-[#f97316]">{formatStudentId(row)}</span>
+                          </TableCell>
+                          <TableCell>
                             <span className="font-semibold">{row.course || "8th"}</span>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            <div className="flex items-center gap-1.5 text-foreground/80">
+                              <Phone className="h-3 w-3 text-muted-foreground" />
+                              <span>{row.phone || "—"}</span>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1 max-w-[200px]">
