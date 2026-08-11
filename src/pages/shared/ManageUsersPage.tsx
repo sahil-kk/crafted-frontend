@@ -728,7 +728,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
             <DialogTitle className="flex items-center gap-2 text-xl font-display font-bold">
               <span>Student Details</span>
               <span className="inline-flex items-center rounded-full bg-orange-550/10 px-2.5 py-0.5 text-xs font-semibold text-[#f97316]">
-                {selectedStudent?.studentId || selectedStudent?.id?.toString().slice(-6).toUpperCase()}
+                {selectedStudent?.studentId || selectedStudent?.id}
               </span>
             </DialogTitle>
           </DialogHeader>

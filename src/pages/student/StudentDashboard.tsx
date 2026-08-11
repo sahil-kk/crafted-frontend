@@ -48,7 +48,7 @@ const StudentDashboard = () => {
 
   const displayName = currentStudent?.full_name || user?.full_name || user?.email?.split("@")[0] || "Student";
   const profilePhoto = currentStudent?.profilePhoto || user?.profilePhoto || null;
-  const studentId = user?.id?.toString().slice(-6).toUpperCase() || "------";
+  const studentId = currentStudent?.studentId || (user as any)?.studentId || currentStudent?.id || user?.id || "------";
   const fullName = displayName;
   const initials = fullName
     .split(" ")
