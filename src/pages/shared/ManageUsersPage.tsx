@@ -71,7 +71,8 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
     subject: "Physics",
     linkedStudentId: "",
     relationship: "Parent",
-    assignedCourses: ["Physics", "Chemistry", "Biology", "Mathematics"]
+    assignedCourses: ["Physics", "Chemistry", "Biology", "Mathematics"],
+    classLink: ""
   });
   
   const [editForm, setEditForm] = useState({ 
@@ -85,7 +86,8 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
     subject: "Physics",
     linkedStudentId: "",
     relationship: "Parent",
-    assignedCourses: [] as string[]
+    assignedCourses: [] as string[],
+    classLink: ""
   });
 
   const students = users.filter((user) => user.role === "student");
@@ -145,6 +147,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
         linkedStudentId: role === "parent" ? form.linkedStudentId : undefined,
         relationship: role === "parent" ? form.relationship : undefined,
         assignedCourses: role === "student" ? form.assignedCourses : undefined,
+        classLink: role === "student" ? form.classLink : undefined,
       });
       const generatedId = role === "student" ? (res?.student?.studentId || res?.studentId) : null;
       toast.success(`${role} created`, {
@@ -164,7 +167,8 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
         subject: "Physics",
         linkedStudentId: "",
         relationship: "Parent",
-        assignedCourses: ["Physics", "Chemistry", "Biology", "Mathematics"]
+        assignedCourses: ["Physics", "Chemistry", "Biology", "Mathematics"],
+        classLink: ""
       });
     } catch (err: any) {
       toast.error(`Failed to create ${role}`, {
@@ -188,6 +192,7 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
         linkedStudentId: role === "parent" ? editForm.linkedStudentId : undefined,
         relationship: role === "parent" ? editForm.relationship : undefined,
         assignedCourses: role === "student" ? editForm.assignedCourses : undefined,
+        classLink: role === "student" ? editForm.classLink : undefined,
         ...(editForm.password ? { password: editForm.password } : {})
       });
       toast.success(`${role} updated`);
@@ -211,7 +216,8 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
       subject: user.subject || "Physics",
       linkedStudentId: user.linkedStudentId || "",
       relationship: user.relationship || "Parent",
-      assignedCourses: user.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"]
+      assignedCourses: user.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"],
+      classLink: user.classLink || ""
     });
     setEditOpen(true);
   };
@@ -349,7 +355,14 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                               </label>
                             );
                           })}
-                        </div>
+                      <div className="space-y-2">
+                        <Label>Live Class Link</Label>
+                        <Input 
+                          type="url"
+                          placeholder="https://meet.google.com/..." 
+                          value={form.classLink || ""} 
+                          onChange={(e) => setForm({ ...form, classLink: e.target.value })} 
+                        />
                       </div>
                     </div>
                   )}
@@ -477,6 +490,15 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                         );
                       })}
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Live Class Link</Label>
+                    <Input 
+                      type="url"
+                      placeholder="https://meet.google.com/..." 
+                      value={editForm.classLink || ""} 
+                      onChange={(e) => setEditForm({ ...editForm, classLink: e.target.value })} 
+                    />
                   </div>
                 </div>
               )}
@@ -767,6 +789,20 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                   ))}
                 </div>
               </div>
+
+              {selectedStudent.classLink && (
+                <div className="border-b border-border/40 pb-4">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">Live Class Link</span>
+                  <a 
+                    href={selectedStudent.classLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary font-medium hover:underline break-all inline-flex items-center gap-1.5"
+                  >
+                    {selectedStudent.classLink}
+                  </a>
+                </div>
+              )}
 
               <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Enrolled On</span>

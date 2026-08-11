@@ -143,6 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         batch: data.student.batch,
         phone: data.student.phone || "",
         profilePhoto: data.student.profilePhoto || "",
+        classLink: data.student.classLink || "",
       };
     } else if (nextRole === "parent" && data.parent) {
       nextUser = {

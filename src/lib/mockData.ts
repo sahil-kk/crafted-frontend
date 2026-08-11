@@ -15,6 +15,7 @@ export interface MockUser {
   linkedStudentId?: string;
   relationship?: string;
   assignedCourses?: string[];
+  classLink?: string;
 }
 
 export interface NoteObj {

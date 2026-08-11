@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, BookOpen, FileText, ClipboardList, 
-  ChevronRight, Presentation
+  ChevronRight, Presentation, Video
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppData } from "@/hooks/useAppData";
@@ -21,7 +21,9 @@ const StudentCourses = () => {
   // Navigation states
   const [activeSubject, setActiveSubject] = useState<string | null>(null);
   const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"notes" | "assignments">("notes");
+  const [activeTab, setActiveTab] = useState<"live" | "notes" | "assignments">("live");
+
+  const classLink = currentStudent?.classLink || user?.classLink || "";
 
   // Retrieve current course document matching class + subject
   const activeCourse = courses.find(
@@ -150,6 +152,16 @@ const StudentCourses = () => {
             <div className="flex gap-2 border-b border-border">
               <button
                 className={`pb-2.5 px-4 text-sm font-semibold transition-all border-b-2 leading-none flex items-center gap-2 ${
+                  activeTab === "live"
+                    ? "border-[#f97316] text-[#f97316]"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={() => setActiveTab("live")}
+              >
+                <Video className="h-4 w-4" /> Live Classes
+              </button>
+              <button
+                className={`pb-2.5 px-4 text-sm font-semibold transition-all border-b-2 leading-none flex items-center gap-2 ${
                   activeTab === "notes"
                     ? "border-[#f97316] text-[#f97316]"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -170,7 +182,40 @@ const StudentCourses = () => {
               </button>
             </div>
 
-            {activeTab === "notes" ? (
+            {activeTab === "live" ? (
+              <Card className="p-6 sm:p-8 shadow-card border-border/60 bg-gradient-to-br from-white via-orange-500/[0.02] to-orange-500/[0.05] dark:from-slate-900 dark:to-slate-950">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 text-[#f97316] text-xs font-semibold">
+                      <span className="h-2 w-2 rounded-full bg-[#f97316] animate-pulse" />
+                      Live Interactive Session
+                    </div>
+                    <h3 className="font-display text-xl font-bold text-foreground">
+                      {activeSubject} - {activeChapter.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground max-w-lg">
+                      Access your live interactive lecture. Click the button to join the session.
+                    </p>
+                  </div>
+
+                  {classLink ? (
+                    <Button
+                      size="lg"
+                      onClick={() => window.open(classLink.startsWith("http") ? classLink : `https://${classLink}`, "_blank", "noopener,noreferrer")}
+                      className="bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold shadow-md shadow-orange-500/20 gap-2 shrink-0 w-full sm:w-auto"
+                    >
+                      <Video className="h-5 w-5" /> Join Live Class Now
+                    </Button>
+                  ) : (
+                    <div className="p-4 bg-muted/40 border border-dashed border-border rounded-xl text-center sm:text-left w-full sm:w-auto shrink-0">
+                      <p className="text-xs text-muted-foreground font-medium">
+                        No live class link available right now.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ) : activeTab === "notes" ? (
               <div className="space-y-3">
                 {!activeChapter.notes || activeChapter.notes.length === 0 ? (
                   <Card className="p-12 text-center shadow-card border-border/60">

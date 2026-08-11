@@ -287,7 +287,10 @@ export const LoginShell = () => {
                     type="text"
                     placeholder={currentConfig.idPlaceholder}
                     value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setIdentifier(activeRole === "student" ? val.toUpperCase() : val);
+                    }}
                     autoComplete="username"
                     required
                     className="pl-11 h-12 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl focus-visible:ring-primary focus-visible:border-primary text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium transition-smooth"
