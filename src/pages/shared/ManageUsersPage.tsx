@@ -355,6 +355,8 @@ export const ManageUsersPage = ({ role, viewerRole, title, description }: Props)
                               </label>
                             );
                           })}
+                        </div>
+                      </div>
                       <div className="space-y-2">
                         <Label>Live Class Link</Label>
                         <Input 
