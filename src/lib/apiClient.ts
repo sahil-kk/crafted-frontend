@@ -38,7 +38,23 @@ export const apiClient = async <T>(endpoint: string, options: FetchOptions = {})
     url += `?${searchParams.toString()}`;
   }
 
-  const response = await fetch(url, config);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...config,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === "AbortError") {
+      throw new Error("Backend server is waking up (cold start). Please try signing in again in a few seconds.");
+    }
+    throw err;
+  }
 
   if (!response.ok) {
     let errorData;
