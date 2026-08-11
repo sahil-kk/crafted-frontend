@@ -31,6 +31,7 @@ interface CreateUserInput {
   profilePhoto?: string;
   password?: string;
   assignedCourses?: string[];
+  classLink?: string;
 }
 
 interface UpdateUserInput {
@@ -47,6 +48,7 @@ interface UpdateUserInput {
   relationship?: string;
   profilePhoto?: string;
   assignedCourses?: string[];
+  classLink?: string;
 }
 
 interface CreateCourseInput {
@@ -187,6 +189,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
             phone: u.phone || "",
             batch: u.batch || "Batch 1",
             profilePhoto: u.profilePhoto || "",
+            classLink: u.classLink || "",
             assignedCourses: u.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"]
           })),
           ...(teachers || []).map((u: any) => ({
@@ -287,6 +290,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
           body.course = input.course || "10th";
           body.batch = input.batch || "Batch 1";
           body.phone = input.phone || "";
+          body.classLink = input.classLink || "";
           body.assignedCourses = input.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"];
         } else {
           body.phone = input.phone || "";
@@ -318,6 +322,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
               subject: input.subject || (input.role === "teacher" ? "Physics" : undefined),
               linkedStudentId: input.linkedStudentId,
               relationship: input.relationship,
+              classLink: res.student?.classLink || input.classLink || "",
               assignedCourses: res.student?.assignedCourses || input.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"],
             },
             ...prev.users,
@@ -356,6 +361,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         if (input.profilePhoto !== undefined) body.profilePhoto = input.profilePhoto;
         if (input.linkedStudentId !== undefined) body.studentId = input.linkedStudentId;
         if (input.relationship !== undefined) body.relationship = input.relationship;
+        if (input.classLink !== undefined) body.classLink = input.classLink;
         if (input.role === "parent") body.username = input.email;
         if (input.assignedCourses !== undefined) body.assignedCourses = input.assignedCourses;
         
@@ -374,6 +380,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
               profilePhoto: input.profilePhoto !== undefined ? input.profilePhoto : u.profilePhoto,
               linkedStudentId: input.linkedStudentId !== undefined ? input.linkedStudentId : u.linkedStudentId,
               relationship: input.relationship !== undefined ? input.relationship : u.relationship,
+              classLink: input.classLink !== undefined ? input.classLink : u.classLink,
               assignedCourses: input.assignedCourses !== undefined ? input.assignedCourses : u.assignedCourses,
             } : u)
         }));
