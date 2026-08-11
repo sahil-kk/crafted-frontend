@@ -13,7 +13,7 @@ const StudentProfile = () => {
   const { user } = useAuth();
   const { users, updateUser } = useAppData();
   const fileRef = useRef<HTMLInputElement>(null);
-  const currentStudent = users.find((item) => item.id === user?.id);
+  const currentStudent = users.find((item) => item.id === user?.id || (user?.studentId && item.studentId === user.studentId) || (user?.email && item.email?.toLowerCase() === user.email.toLowerCase()));
 
   const [photo, setPhoto] = useState<string | null>(currentStudent?.profilePhoto || user?.profilePhoto || null);
   const [isUploading, setIsUploading] = useState(false);

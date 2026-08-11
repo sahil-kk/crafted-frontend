@@ -20,7 +20,7 @@ const StudentDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { exams, announcements, results, timetables, users } = useAppData();
-  const currentStudent = users.find((item) => item.id === user?.id);
+  const currentStudent = users.find((item) => item.id === user?.id || (user?.studentId && item.studentId === user.studentId) || (user?.email && item.email?.toLowerCase() === user.email.toLowerCase()));
 
   const [calDate, setCalDate] = useState<Date | undefined>(new Date());
 

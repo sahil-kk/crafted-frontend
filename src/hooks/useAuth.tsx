@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     if (nextRole === "student" && data.student) {
       nextUser = {
-        id: data.student.id || identifier,
+        id: data.student._id || data.student.id || data.student.studentId || identifier,
         email: data.student.email || `${identifier}@example.com`,
         role: "student",
         full_name: data.student.name || identifier,

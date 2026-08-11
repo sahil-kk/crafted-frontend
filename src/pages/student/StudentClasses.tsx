@@ -14,7 +14,7 @@ const StudentCourses = () => {
   const { users, courses } = useAppData();
 
   // Retrieve current student profile details
-  const currentStudent = users.find((u) => u.id === user?.id);
+  const currentStudent = users.find((u) => u.id === user?.id || (user?.studentId && u.studentId === user.studentId) || (user?.email && u.email?.toLowerCase() === user.email.toLowerCase()));
   const classGrade = currentStudent?.course || "10th";
   const assignedSubjects = currentStudent?.assignedCourses || ["Physics", "Chemistry", "Biology", "Mathematics"];
 
@@ -51,6 +51,39 @@ const StudentCourses = () => {
             <h2 className="font-display text-2xl font-bold">My Courses</h2>
             <p className="text-muted-foreground mt-1">Access your assigned study materials, notes, and assignments</p>
           </div>
+
+          <Card className="p-6 sm:p-8 shadow-card border-border/60 bg-gradient-to-br from-white via-orange-500/[0.02] to-orange-500/[0.05] dark:from-slate-900 dark:to-slate-950">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 text-[#f97316] text-xs font-semibold">
+                  <span className="h-2 w-2 rounded-full bg-[#f97316] animate-pulse" />
+                  Live Interactive Session
+                </div>
+                <h3 className="font-display text-xl font-bold text-foreground">
+                  {classGrade} Online Live Class
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-lg">
+                  Access your live interactive lecture room. Click the button to join your session.
+                </p>
+              </div>
+
+              {classLink ? (
+                <Button
+                  size="lg"
+                  onClick={() => window.open(classLink.startsWith("http") ? classLink : `https://${classLink}`, "_blank", "noopener,noreferrer")}
+                  className="bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold shadow-md shadow-orange-500/20 gap-2 shrink-0 w-full sm:w-auto"
+                >
+                  <Video className="h-5 w-5" /> Join Live Class Now
+                </Button>
+              ) : (
+                <div className="p-4 bg-muted/40 border border-dashed border-border rounded-xl text-center sm:text-left w-full sm:w-auto shrink-0">
+                  <p className="text-xs text-muted-foreground font-medium">
+                    No live class link available right now.
+                  </p>
+                </div>
+              )}
+            </div>
+          </Card>
           
           <div className="grid sm:grid-cols-2 gap-5">
             {assignedSubjects.map((sub) => {
@@ -100,6 +133,39 @@ const StudentCourses = () => {
             <h2 className="font-display text-2xl font-bold">{activeSubject}</h2>
             <p className="text-muted-foreground mt-1">Select a chapter to access files</p>
           </div>
+
+          <Card className="p-6 sm:p-8 shadow-card border-border/60 bg-gradient-to-br from-white via-orange-500/[0.02] to-orange-500/[0.05] dark:from-slate-900 dark:to-slate-950 max-w-3xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 text-[#f97316] text-xs font-semibold">
+                  <span className="h-2 w-2 rounded-full bg-[#f97316] animate-pulse" />
+                  Live Interactive Session
+                </div>
+                <h3 className="font-display text-xl font-bold text-foreground">
+                  {activeSubject} Live Class
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-lg">
+                  Access your live interactive lecture. Click the button to join the session.
+                </p>
+              </div>
+
+              {classLink ? (
+                <Button
+                  size="lg"
+                  onClick={() => window.open(classLink.startsWith("http") ? classLink : `https://${classLink}`, "_blank", "noopener,noreferrer")}
+                  className="bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold shadow-md shadow-orange-500/20 gap-2 shrink-0 w-full sm:w-auto"
+                >
+                  <Video className="h-5 w-5" /> Join Live Class Now
+                </Button>
+              ) : (
+                <div className="p-4 bg-muted/40 border border-dashed border-border rounded-xl text-center sm:text-left w-full sm:w-auto shrink-0">
+                  <p className="text-xs text-muted-foreground font-medium">
+                    No live class link available right now.
+                  </p>
+                </div>
+              )}
+            </div>
+          </Card>
 
           <div className="max-w-3xl space-y-3">
             {!activeCourse?.chapters || activeCourse.chapters.length === 0 ? (
