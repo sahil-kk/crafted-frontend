@@ -91,7 +91,7 @@ export const LoginShell = () => {
     }
   };
 
-  // Content for role selection cards
+  // Content for role selection cards (Public: Student, Teacher, Parent)
   const roleCards = [
     {
       id: "student" as LoginRole,
@@ -111,12 +111,6 @@ export const LoginShell = () => {
       description: "Monitor child's academic progress",
       icon: Users,
     },
-    {
-      id: "admin" as LoginRole,
-      title: "Admin",
-      description: "Oversee system & analytics",
-      icon: Shield,
-    }
   ];
 
   // Config per role for the login card
@@ -194,7 +188,14 @@ export const LoginShell = () => {
             <p className="text-white/95 text-center lg:text-left text-xl sm:text-2xl lg:text-3xl leading-relaxed max-w-xl mx-auto lg:mx-0 font-semibold sm:font-medium">
               Learn from the<br />
               people who've been<br />
-              there and <span className="text-slate-950 font-black ml-1">done it.</span>
+              there and{" "}
+              <button
+                type="button"
+                onClick={() => handleRoleChange("admin")}
+                className="text-slate-950 font-black ml-1 inline-block focus:outline-none border-none bg-transparent p-0"
+              >
+                done it.
+              </button>
             </p>
           </div>
 
@@ -205,7 +206,7 @@ export const LoginShell = () => {
               <span>Select Your Role</span>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
               {roleCards.map((rc) => {
                 const IconComponent = rc.icon;
                 const isSelected = activeRole === rc.id;
@@ -266,10 +267,6 @@ export const LoginShell = () => {
             <div className="absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-primary/5 blur-xl pointer-events-none" />
 
             <div className="mb-6 lg:mb-8">
-              <div className={`inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border ${currentConfig.badgeColor} mb-4`}>
-                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
-                {currentConfig.badgeText}
-              </div>
               <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{currentConfig.title}</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">{currentConfig.subtitle}</p>
             </div>
